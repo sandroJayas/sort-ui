@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import Link from "next/link";
-import { SortLogo } from "./SortLogo";
+import { SortLogo } from "@/components/home/SortLogo";
 
 export function Navbar() {
   return (
