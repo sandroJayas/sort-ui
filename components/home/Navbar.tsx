@@ -88,20 +88,26 @@ export function Navbar() {
           </div>
 
           {/* Mobile Menu */}
-
           <Drawer open={open} onOpenChange={setOpen}>
             <DrawerTrigger asChild>
               <MenuIcon className="md:hidden" />
             </DrawerTrigger>
             <DrawerContent>
-              <DrawerHeader className="text-left">
+              <DrawerHeader className="text-left content-center">
                 <VisuallyHidden>
                   <DrawerTitle>Menu</DrawerTitle>
                 </VisuallyHidden>
-
+                <Link
+                  href="/login"
+                  className="text-gray-600 hover:text-black transition-colors h-18 content-center"
+                  onClick={() => setOpen(false)}
+                >
+                  Login
+                </Link>
+                <Separator />
                 <Link
                   href="#about"
-                  className="text-gray-600 hover:text-black transition-colors"
+                  className="text-gray-600 hover:text-black transition-colors h-18 content-center"
                   onClick={() => setOpen(false)}
                 >
                   About
@@ -109,7 +115,7 @@ export function Navbar() {
                 <Separator />
                 <Link
                   href="#features"
-                  className="text-gray-600 hover:text-black transition-colors"
+                  className="text-gray-600 hover:text-black transition-colors h-18 content-center"
                   onClick={() => setOpen(false)}
                 >
                   Features
@@ -117,7 +123,7 @@ export function Navbar() {
                 <Separator />
                 <Link
                   href="#future"
-                  className="text-gray-600 hover:text-black transition-colors"
+                  className="text-gray-600 hover:text-black transition-colors h-18 content-center"
                   onClick={() => setOpen(false)}
                 >
                   Future
@@ -125,18 +131,10 @@ export function Navbar() {
                 <Separator />
                 <Link
                   href="#contact"
-                  className="text-gray-600 hover:text-black transition-colors"
+                  className="text-gray-600 hover:text-black transition-colors h-18 content-center"
                   onClick={() => setOpen(false)}
                 >
                   Contact
-                </Link>
-                <Separator />
-                <Link
-                  href="/login"
-                  className="text-gray-600 hover:text-black transition-colors"
-                  onClick={() => setOpen(false)}
-                >
-                  Login
                 </Link>
               </DrawerHeader>
             </DrawerContent>
