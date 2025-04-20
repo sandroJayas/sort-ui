@@ -34,10 +34,8 @@ export function LoginForm({
     setIsSubmitting(false);
 
     if (res?.ok) {
-      console.log(res);
       router.push("/dashboard");
     } else {
-      console.log(res);
       setError("Invalid email or password");
     }
   };
