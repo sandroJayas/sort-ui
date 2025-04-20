@@ -26,6 +26,9 @@ export function Navbar() {
             <Link href="#contact" className="text-gray-600 hover:text-black transition-colors">
               Contact
             </Link>
+            <Link href="/login" className="text-gray-600 hover:text-black transition-colors">
+              Login
+            </Link>
             <Button className="bg-black text-white hover:bg-gray-800">
               Get Started
             </Button>

@@ -23,7 +23,7 @@ export function LoginForm({
               </div>
               <span className="sr-only">Acme Inc.</span>
             </a>
-            <h1 className="text-xl font-bold">Welcome to Acme Inc.</h1>
+            <h1 className="text-xl font-bold">Welcome to Sort</h1>
             <div className="text-center text-sm">
               Don&apos;t have an account?{" "}
               <a href="#" className="underline underline-offset-4">
@@ -37,7 +37,7 @@ export function LoginForm({
               <Input
                 id="email"
                 type="email"
-                placeholder="m@example.com"
+                placeholder="mail@example.com"
                 required
               />
             </div>
