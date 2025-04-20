@@ -1,19 +1,21 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Menu } from "lucide-react";
 import Link from "next/link";
 import { SortLogo } from "@/components/home/SortLogo";
-import { useState } from "react";
-import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuTrigger,
-  NavigationMenuContent,
-  NavigationMenuLink,
-} from "@/components/ui/navigation-menu";
+import { NavigationMenuLink } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
 import React from "react";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import { MenuIcon } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
@@ -42,6 +44,7 @@ const ListItem = React.forwardRef<
 ListItem.displayName = "ListItem";
 
 export function Navbar() {
+  const [open, setOpen] = React.useState(false);
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm border-b">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -86,27 +89,58 @@ export function Navbar() {
 
           {/* Mobile Menu */}
 
-          <NavigationMenu className="md:hidden">
-            <NavigationMenuItem>
-              <NavigationMenuTrigger>Getting started</NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
-                  <ListItem href="/docs" title="Introduction">
-                    Re-usable components built using Radix UI and Tailwind CSS.
-                  </ListItem>
-                  <ListItem href="/docs/installation" title="Installation">
-                    How to install dependencies and structure your app.
-                  </ListItem>
-                  <ListItem
-                    href="/docs/primitives/typography"
-                    title="Typography"
-                  >
-                    Styles for headings, paragraphs, lists...etc
-                  </ListItem>
-                </ul>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
-          </NavigationMenu>
+          <Drawer open={open} onOpenChange={setOpen}>
+            <DrawerTrigger asChild>
+              <MenuIcon className="md:hidden" />
+            </DrawerTrigger>
+            <DrawerContent>
+              <DrawerHeader className="text-left">
+                <VisuallyHidden>
+                  <DrawerTitle>Menu</DrawerTitle>
+                </VisuallyHidden>
+
+                <Link
+                  href="#about"
+                  className="text-gray-600 hover:text-black transition-colors"
+                  onClick={() => setOpen(false)}
+                >
+                  About
+                </Link>
+                <Separator />
+                <Link
+                  href="#features"
+                  className="text-gray-600 hover:text-black transition-colors"
+                  onClick={() => setOpen(false)}
+                >
+                  Features
+                </Link>
+                <Separator />
+                <Link
+                  href="#future"
+                  className="text-gray-600 hover:text-black transition-colors"
+                  onClick={() => setOpen(false)}
+                >
+                  Future
+                </Link>
+                <Separator />
+                <Link
+                  href="#contact"
+                  className="text-gray-600 hover:text-black transition-colors"
+                  onClick={() => setOpen(false)}
+                >
+                  Contact
+                </Link>
+                <Separator />
+                <Link
+                  href="/login"
+                  className="text-gray-600 hover:text-black transition-colors"
+                  onClick={() => setOpen(false)}
+                >
+                  Login
+                </Link>
+              </DrawerHeader>
+            </DrawerContent>
+          </Drawer>
         </div>
       </div>
     </nav>
