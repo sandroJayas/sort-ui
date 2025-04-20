@@ -11,7 +11,7 @@ export function Contact() {
               Get in Touch
             </h2>
             <p className="text-xl text-gray-600">
-              We'd love to hear from you
+              We&#39;d love to hear from you
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -46,4 +46,4 @@ export function Contact() {
       </div>
     </section>
   );
-} 
+}
