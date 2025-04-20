@@ -1,12 +1,27 @@
-import { Button } from "@/components/ui/button";
+import { Navbar } from "@/components/home/Navbar";
+import { Hero } from "@/components/home/Hero";
+import { Features } from "@/components/home/Features";
+import { FutureOutlook } from "@/components/home/FutureOutlook";
+import { Contact } from "@/components/home/Contact";
 
 export default function Home() {
   return (
     <>
-      <h1 className="text-3xl font-bold underline">Hello world!</h1>
-      <div>
-        <Button>Click me</Button>
-      </div>
+      <Navbar />
+      <main>
+        <section id="about">
+          <Hero />
+        </section>
+        <section id="features">
+          <Features />
+        </section>
+        <section id="future">
+          <FutureOutlook />
+        </section>
+        <section id="contact">
+          <Contact />
+        </section>
+      </main>
     </>
   );
 }
