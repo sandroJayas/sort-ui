@@ -1,7 +1,7 @@
 import { DashboardNavbar } from "@/components/dashboard/Navbar";
 import Sidebar from "@/components/profile/Sidebar";
 import type React from "react";
-import PersonalInformationForm from "@/components/profile/personal-information-form";
+import PersonalDataForm from "@/components/profile/PersonalDataForm";
 import { Card } from "@/components/ui/card";
 
 export default function PersonalInformationPage() {
@@ -15,7 +15,7 @@ export default function PersonalInformationPage() {
           <Sidebar tab={"personal-information"} />
           <Card className="flex-1 bg-white p-6 border rounded-md min-h-[calc(100vh-8rem)] mt-6 md:mt-0">
             <h1 className="text-2xl font-semibold">Personal information</h1>
-            <PersonalInformationForm />
+            <PersonalDataForm />
           </Card>
         </div>
       </div>

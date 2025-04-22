@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useUser } from "@/hooks/useUser";
 import { toast } from "sonner";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
@@ -48,13 +48,31 @@ const profileSchema = z.object({
   payment_method_id: z.string().optional(),
 });
 
-const PersonalInformationForm = () => {
+const PersonalDataForm = () => {
+  const [activeTab, setActiveTab] = useState("personal");
   const { data: user, isLoading, error } = useUser();
   const { mutate, isPending } = useUpdateProfile();
   type ProfileFormValues = z.infer<typeof profileSchema>;
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
   });
+
+  const switchTab = () => {
+    const formData = form.getValues();
+    if (
+      formData.first_name === "" ||
+      formData.last_name === "" ||
+      formData.phone_number === ""
+    ) {
+      setActiveTab("personal");
+    } else if (
+      formData.address_line_1 === "" ||
+      formData.city === "" ||
+      formData.postal_code === ""
+    ) {
+      setActiveTab("address");
+    }
+  };
 
   const onSubmit = (values: ProfileFormValues) => {
     mutate(values, {
@@ -101,7 +119,7 @@ const PersonalInformationForm = () => {
 
   return (
     <Card className="mt-6">
-      <Tabs defaultValue="personal" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="mx-6 mt-6">
           <TabsTrigger value="personal">Personal Details</TabsTrigger>
           <TabsTrigger value="address">Address</TabsTrigger>
@@ -113,6 +131,7 @@ const PersonalInformationForm = () => {
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-6"
+                onSubmitCapture={switchTab}
               >
                 {/* Personal Details */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -177,7 +196,9 @@ const PersonalInformationForm = () => {
                   )}
                 />
                 <div className="flex justify-end">
-                  <Button type="submit">Save Changes</Button>
+                  <Button type="submit" disabled={isPending}>
+                    {isPending ? "Saving..." : "Save Changes"}
+                  </Button>
                 </div>
               </form>
             </Form>
@@ -190,6 +211,7 @@ const PersonalInformationForm = () => {
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-6"
+                onSubmitCapture={switchTab}
               >
                 <FormField
                   control={form.control}
@@ -294,4 +316,4 @@ const PersonalInformationForm = () => {
   );
 };
 
-export default PersonalInformationForm;
+export default PersonalDataForm;
