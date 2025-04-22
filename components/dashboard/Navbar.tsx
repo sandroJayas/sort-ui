@@ -22,12 +22,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function DashboardNavbar() {
   const [open, setOpen] = React.useState(false);
+  const queryClient = useQueryClient();
 
   const handleLogout = () => {
     setOpen(false);
+    queryClient.clear();
     signOut({ callbackUrl: "/" });
   };
   return (
