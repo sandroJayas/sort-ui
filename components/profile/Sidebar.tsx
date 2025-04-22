@@ -39,9 +39,11 @@ const Sidebar = (props: { tab: string }) => {
   const { data: user, isLoading, error } = useUser();
 
   useEffect(() => {
-    toast(error?.name, {
-      description: error?.message,
-    });
+    if (error) {
+      toast.error(error?.name, {
+        description: error?.message,
+      });
+    }
   }, [error]);
 
   if (isLoading) {

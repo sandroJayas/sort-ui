@@ -69,10 +69,13 @@ const PersonalInformationForm = () => {
     });
   };
 
+  console.log(user);
   useEffect(() => {
-    toast.error(error?.name, {
-      description: error?.message,
-    });
+    if (error) {
+      toast.error(error?.name, {
+        description: error?.message,
+      });
+    }
   }, [error]);
 
   useEffect(() => {
