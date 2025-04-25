@@ -3,8 +3,9 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import ShipmentTracker from "@/components/dashboard/ShipmentTracker";
+import { Box } from "@/types/box";
 
-const BoxCard = () => {
+const BoxCard = ({ box }: { box: Box }) => {
   return (
     <Card className="border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm mb-10">
       <CardContent>
@@ -49,7 +50,7 @@ const BoxCard = () => {
           <div className="flex flex-col md:flex-row gap-6 mt-4">
             <div className="flex gap-4 w-full">
               <div className="mb-2">
-                <div className="font-medium">Box Name</div>
+                <div className="font-medium">{box.items[0].name}</div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">
                   In this box i have:
                   <br />
