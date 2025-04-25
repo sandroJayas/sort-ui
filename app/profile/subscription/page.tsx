@@ -1,4 +1,4 @@
-import { DashboardNavbar } from "@/components/dashboard/Navbar";
+import { DashboardNavbar } from "@/components/boxes/Navbar";
 import Sidebar from "@/components/profile/Sidebar";
 import type React from "react";
 import PersonalDataForm from "@/components/profile/PersonalDataForm";

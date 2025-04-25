@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import ShipmentTracker from "@/components/dashboard/ShipmentTracker";
+import ShipmentTracker from "@/components/boxes/ShipmentTracker";
 import { Box } from "@/types/box";
 import { useUser } from "@/hooks/useUser";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
@@ -10,7 +10,7 @@ import React, { useEffect } from "react";
 import { toast } from "sonner";
 import { formatTimeForDisplay } from "@/lib/utils";
 import { useUpdateBoxStatus } from "@/hooks/useUpdateBoxStatus";
-import NextStepDialogButton from "@/components/dashboard/NextStepDialog";
+import NextStepDialogButton from "@/components/boxes/NextStepDialog";
 
 const BoxCard = ({ box }: { box: Box }) => {
   const { data: user, isLoading, error } = useUser();

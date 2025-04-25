@@ -1,8 +1,8 @@
 "use client";
 
-import { DashboardNavbar } from "@/components/dashboard/Navbar";
-import BoxCard from "@/components/dashboard/BoxCard";
-import Header from "@/components/dashboard/Header";
+import { DashboardNavbar } from "@/components/boxes/Navbar";
+import BoxCard from "@/components/boxes/BoxCard";
+import Header from "@/components/boxes/Header";
 import { useUserBoxes } from "@/hooks/useUserBoxes";
 import React, { useEffect } from "react";
 import { toast } from "sonner";

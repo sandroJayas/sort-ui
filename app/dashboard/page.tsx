@@ -1,4 +1,4 @@
-import { DashboardNavbar } from "@/components/dashboard/Navbar";
+import { DashboardNavbar } from "@/components/boxes/Navbar";
 import React from "react";
 
 export default function DashboardPage() {
