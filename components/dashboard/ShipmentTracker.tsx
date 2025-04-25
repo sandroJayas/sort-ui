@@ -9,18 +9,17 @@ import {
   Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-type ShipmentStatus = "transit" | "packing" | "pickup" | "stored";
+import { BoxStatus } from "@/types/box";
 
 interface ShipmentTrackerProps {
-  currentStatus: ShipmentStatus;
+  currentStatus: BoxStatus;
   trackingNumber?: string;
   estimatedDelivery?: string;
   className?: string;
 }
 
 interface StatusStep {
-  id: ShipmentStatus;
+  id: BoxStatus;
   label: string;
   icon: React.ReactNode;
   description: string;
@@ -34,19 +33,19 @@ const ShipmentTracker = ({
 }: ShipmentTrackerProps) => {
   const steps: StatusStep[] = [
     {
-      id: "transit",
+      id: "in_transit",
       label: "In Transit",
       icon: <ClipboardCheck className="h-5 w-5" />,
       description: "Your order has been received",
     },
     {
-      id: "packing",
+      id: "pending_pack",
       label: "Packing",
       icon: <Package className="h-5 w-5" />,
       description: "Your order is being processed",
     },
     {
-      id: "pickup",
+      id: "pending_pickup",
       label: "Pickup",
       icon: <Truck className="h-5 w-5" />,
       description: "Your package is on its way",

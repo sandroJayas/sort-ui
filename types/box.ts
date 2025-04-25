@@ -6,10 +6,18 @@ export type Item = {
   image_url: string;
 };
 
+export type BoxStatus =
+  | "in_transit"
+  | "pending_pack"
+  | "pending_pickup"
+  | "stored"
+  | "returned"
+  | "disposed";
+
 export type Box = {
   id: string;
   packing_mode: string;
-  status: string;
+  status: BoxStatus;
   items: Item[];
   created_at: string;
   updated_at: string;

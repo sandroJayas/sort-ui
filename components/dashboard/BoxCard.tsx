@@ -4,8 +4,44 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import ShipmentTracker from "@/components/dashboard/ShipmentTracker";
 import { Box } from "@/types/box";
+import { useUser } from "@/hooks/useUser";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import React, { useEffect } from "react";
+import { toast } from "sonner";
+import { formatTimeForDisplay } from "@/lib/utils";
+import { useUpdateBoxStatus } from "@/hooks/useUpdateBoxStatus";
 
 const BoxCard = ({ box }: { box: Box }) => {
+  const { data: user, isLoading, error } = useUser();
+  const { mutate, isPending } = useUpdateBoxStatus();
+
+  const handleReceived = () => {
+    mutate(
+      { id: box.id, status: "pending_pack" },
+      {
+        onSuccess: (message) => {
+          toast.success(message);
+        },
+        onError: (error) => {
+          toast.error("Update failed", {
+            description: (error as Error).message,
+          });
+        },
+      },
+    );
+  };
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error?.name, {
+        description: error?.message,
+      });
+    }
+  }, [error]);
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
   return (
     <Card className="border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm mb-10">
       <CardContent>
@@ -14,19 +50,27 @@ const BoxCard = ({ box }: { box: Box }) => {
             <div className="text-gray-500 dark:text-gray-400 text-xs">
               BOX ORDER PLACED
             </div>
-            <div>April 18, 2025</div>
+            <div>{formatTimeForDisplay(box.created_at)}</div>
           </div>
           <div>
             <div className="text-gray-500 dark:text-gray-400 text-xs">TYPE</div>
-            <div>Self Packing</div>
+            <div>{box.packing_mode === "self" ? "Self Packing" : "Sort"}</div>
           </div>
           <div>
             <div className="text-gray-500 dark:text-gray-400 text-xs">
               SHIP TO
             </div>
-            <div className="flex items-center">Sandro Jayasinghe</div>
-            <div className="flex items-center">Viale lombardia 9, 20092</div>
-            <div className="flex items-center">Cinisello Balsamo, Italy</div>
+            <div className="flex items-center">
+              {user?.first_name + " " + user?.last_name}
+            </div>
+            <div className="flex items-center">{box.pickup_address.street}</div>
+            <div className="flex items-center">
+              {box.pickup_address.zip_code +
+                ", " +
+                box.pickup_address.city +
+                ", " +
+                box.pickup_address.country}
+            </div>
           </div>
           <div>
             <div className="text-gray-500 dark:text-gray-400 text-xs">
@@ -39,7 +83,7 @@ const BoxCard = ({ box }: { box: Box }) => {
         <div className=" md:flex-row justify-between items-start md:items-center mt-4 border-b border-gray-200 dark:border-gray-700 pb-4">
           <div>
             <ShipmentTracker
-              currentStatus="transit"
+              currentStatus={box.status}
               trackingNumber="TRK987654321"
               estimatedDelivery="April 24, 2025"
             />
@@ -60,7 +104,20 @@ const BoxCard = ({ box }: { box: Box }) => {
             </div>
 
             <div className="flex flex-col gap-2 flex-grow w-full">
-              <Button>Mark as Received</Button>
+              {(() => {
+                switch (box.status) {
+                  case "in_transit":
+                    return (
+                      <Button onClick={handleReceived} disabled={isPending}>
+                        {isPending ? "Updating..." : "Mark as Received"}
+                      </Button>
+                    );
+                  case "pending_pack":
+                    return <Button>Request pick up</Button>;
+                  default:
+                    return null;
+                }
+              })()}
               <Button variant="outline">Edit Box</Button>
               <Button variant="outline">Add pictures</Button>
               <Button variant="outline">Get box support</Button>
