@@ -1,5 +1,5 @@
 import React from "react";
-import { Search } from "lucide-react";
+import { PlusIcon, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,25 +24,31 @@ const Header = () => {
               placeholder="Search all boxes"
             />
           </div>
-          <Button>Search Boxes</Button>
+          <Button variant={"outline"}>Search Boxes</Button>
         </div>
       </div>
-      <div className="flex items-center gap-4 mb-4">
-        <div className="text-sm font-medium">
-          <span className="font-bold">1 box</span> updated in
-        </div>
+      <div className="grid md:flex md:justify-between md:items-center gap-4 mb-4">
+        <div className={"flex items-center gap-4 mb-4"}>
+          <div className="text-sm font-medium">
+            <span className="font-bold">1 box</span> updated in
+          </div>
 
-        <Select defaultValue="3months">
-          <SelectTrigger className="w-[160px] h-9 text-sm border-gray-300 dark:border-gray-600">
-            <SelectValue placeholder="Time" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="30days">last 30 days</SelectItem>
-            <SelectItem value="3months">past 3 months</SelectItem>
-            <SelectItem value="2025">2025</SelectItem>
-            <SelectItem value="2024">2024</SelectItem>
-          </SelectContent>
-        </Select>
+          <Select defaultValue="3months">
+            <SelectTrigger className="w-[160px] h-9 text-sm border-gray-300 dark:border-gray-600">
+              <SelectValue placeholder="Time" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="30days">last 30 days</SelectItem>
+              <SelectItem value="3months">past 3 months</SelectItem>
+              <SelectItem value="2025">2025</SelectItem>
+              <SelectItem value="2024">2024</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <Button size={"lg"}>
+          <PlusIcon />
+          Store Boxes
+        </Button>
       </div>
     </>
   );

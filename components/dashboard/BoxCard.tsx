@@ -154,7 +154,15 @@ const BoxCard = ({ box }: { box: Box }) => {
         </div>
 
         <div className="pt-4 border-t border-gray-200 dark:border-gray-700 mt-6">
-          <Button variant="link" className="text-blue-600 p-0 h-auto">
+          <Button
+            variant="link"
+            className="text-blue-600 p-0 h-auto"
+            disabled={
+              box.status === "stored" ||
+              box.status === "disposed" ||
+              box.status === "pending_pickup"
+            }
+          >
             Cancel Order
           </Button>
         </div>

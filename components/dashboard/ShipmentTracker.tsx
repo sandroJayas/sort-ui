@@ -90,40 +90,39 @@ const ShipmentTracker = ({
             const isCurrent = index === currentStatusIndex;
 
             return (
-              <>
+              <div
+                key={index}
+                className={cn(
+                  "flex flex-col items-center cursor-pointer group",
+                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ring",
+                )}
+                tabIndex={0}
+                aria-label={`${step.label} ${isCompleted ? "completed" : isCurrent ? "in progress" : "pending"}`}
+              >
+                {/* Status circle */}
                 <div
                   className={cn(
-                    "flex flex-col items-center cursor-pointer group",
-                    "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ring",
+                    "relative flex items-center justify-center w-8 h-8 rounded-full z-10 transition-all",
+                    isCompleted ? "bg-gray-600" : "bg-gray-200",
+                    isCurrent ? "ring-4 ring-yellow-600" : "",
                   )}
-                  tabIndex={0}
-                  aria-label={`${step.label} ${isCompleted ? "completed" : isCurrent ? "in progress" : "pending"}`}
                 >
-                  {/* Status circle */}
-                  <div
-                    className={cn(
-                      "relative flex items-center justify-center w-8 h-8 rounded-full z-10 transition-all",
-                      isCompleted ? "bg-gray-600" : "bg-gray-200",
-                      isCurrent ? "ring-4 ring-yellow-600" : "",
-                    )}
-                  >
-                    {isCompleted ? (
-                      isCurrent ? (
-                        <div className="text-white">{step.icon}</div>
-                      ) : (
-                        <CheckCircle2 className="h-5 w-5 text-white" />
-                      )
+                  {isCompleted ? (
+                    isCurrent ? (
+                      <div className="text-white">{step.icon}</div>
                     ) : (
-                      <div className="text-gray-500">{step.icon}</div>
-                    )}
-                  </div>
-
-                  {/* Label */}
-                  <div className="mt-2 text-xs font-medium text-center">
-                    {step.label}
-                  </div>
+                      <CheckCircle2 className="h-5 w-5 text-white" />
+                    )
+                  ) : (
+                    <div className="text-gray-500">{step.icon}</div>
+                  )}
                 </div>
-              </>
+
+                {/* Label */}
+                <div className="mt-2 text-xs font-medium text-center">
+                  {step.label}
+                </div>
+              </div>
             );
           })}
         </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { SortLogo } from "../home/SortLogo";
-import { User } from "lucide-react";
+import { Menu, User } from "lucide-react";
 import React from "react";
 import {
   Drawer,
@@ -36,10 +36,31 @@ export function DashboardNavbar() {
   return (
     <nav className="top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm border-b">
       <div className="container mx-auto px-4 max-w-6xl">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between py-4 border-b">
           {/* Logo */}
-          <SortLogo />
-
+          <div className={"flex items-center gap-8"}>
+            <SortLogo />
+            <div className="hidden md:flex items-center gap-6">
+              <Link
+                href="/dashboard"
+                className="text-sm hover:text-primary transition-colors space-x-5 tracking-wide"
+              >
+                Dashboard
+              </Link>
+              <Link
+                href="/boxes"
+                className="text-sm hover:text-primary transition-colors tracking-wide"
+              >
+                Boxes
+              </Link>
+              <Link
+                href="/subscription"
+                className="text-sm hover:text-primary transition-colors tracking-wide"
+              >
+                Subscription
+              </Link>
+            </div>
+          </div>
           {/* Desktop Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger>
@@ -69,12 +90,11 @@ export function DashboardNavbar() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
           {/* Mobile Menu */}
           <Drawer open={open} onOpenChange={setOpen}>
             <DrawerTrigger asChild>
               <div className="w-10 h-10 bg-gray-100 rounded-full overflow-hidden flex items-center justify-center md:hidden">
-                <User className="w-6 h-6 text-gray-600" />
+                <Menu className="w-6 h-6 text-gray-600" />
               </div>
             </DrawerTrigger>
             <DrawerContent>
@@ -88,6 +108,30 @@ export function DashboardNavbar() {
                   onClick={() => setOpen(false)}
                 >
                   Profile
+                </Link>
+                <Separator />
+                <Link
+                  href="/dashboard"
+                  className="text-gray-600 hover:text-black transition-colors h-18 content-center"
+                  onClick={() => setOpen(false)}
+                >
+                  Dashboard
+                </Link>
+                <Separator />
+                <Link
+                  href="/boxes"
+                  className="text-gray-600 hover:text-black transition-colors h-18 content-center"
+                  onClick={() => setOpen(false)}
+                >
+                  Boxes
+                </Link>
+                <Separator />
+                <Link
+                  href=""
+                  className="text-gray-600 hover:text-black transition-colors h-18 content-center"
+                  onClick={() => setOpen(false)}
+                >
+                  Subscription
                 </Link>
                 <Separator />
                 <Link

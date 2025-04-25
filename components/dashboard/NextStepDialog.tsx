@@ -28,8 +28,8 @@ const NextStepDialogButton = ({
   };
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
-        <Button disabled={isPending}>
+      <DialogTrigger asChild>
+        <Button disabled={isPending} className={"w-full"}>
           {isPending
             ? "Updating..."
             : option === "in_transit"
