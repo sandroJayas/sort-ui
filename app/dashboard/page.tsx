@@ -25,7 +25,7 @@ export default function DashboardPage() {
   return (
     <>
       <DashboardNavbar />
-      <div className="container mx-auto px-4 py-8 max-w-5xl">
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
         <Header />
         {boxes ? boxes.map((box) => <BoxCard key={box.id} box={box} />) : null}
       </div>

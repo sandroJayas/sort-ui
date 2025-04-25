@@ -22,7 +22,6 @@ interface StatusStep {
   id: BoxStatus;
   label: string;
   icon: React.ReactNode;
-  description: string;
 }
 
 const ShipmentTracker = ({
@@ -36,25 +35,21 @@ const ShipmentTracker = ({
       id: "in_transit",
       label: "In Transit",
       icon: <ClipboardCheck className="h-5 w-5" />,
-      description: "Your order has been received",
     },
     {
       id: "pending_pack",
       label: "Packing",
       icon: <Package className="h-5 w-5" />,
-      description: "Your order is being processed",
     },
     {
       id: "pending_pickup",
       label: "Pickup",
       icon: <Truck className="h-5 w-5" />,
-      description: "Your package is on its way",
     },
     {
       id: "stored",
       label: "Stored",
       icon: <Shield className="h-5 w-5" />,
-      description: "Your package will be delivered today",
     },
   ];
 

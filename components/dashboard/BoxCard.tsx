@@ -10,6 +10,7 @@ import React, { useEffect } from "react";
 import { toast } from "sonner";
 import { formatTimeForDisplay } from "@/lib/utils";
 import { useUpdateBoxStatus } from "@/hooks/useUpdateBoxStatus";
+import NextStepDialogButton from "@/components/dashboard/NextStepDialog";
 
 const BoxCard = ({ box }: { box: Box }) => {
   const { data: user, isLoading, error } = useUser();
@@ -18,6 +19,22 @@ const BoxCard = ({ box }: { box: Box }) => {
   const handleReceived = () => {
     mutate(
       { id: box.id, status: "pending_pack" },
+      {
+        onSuccess: (message) => {
+          toast.success(message);
+        },
+        onError: (error) => {
+          toast.error("Update failed", {
+            description: (error as Error).message,
+          });
+        },
+      },
+    );
+  };
+
+  const handlePickUp = () => {
+    mutate(
+      { id: box.id, status: "pending_pickup" },
       {
         onSuccess: (message) => {
           toast.success(message);
@@ -80,15 +97,17 @@ const BoxCard = ({ box }: { box: Box }) => {
           </div>
         </div>
 
-        <div className=" md:flex-row justify-between items-start md:items-center mt-4 border-b border-gray-200 dark:border-gray-700 pb-4">
-          <div>
-            <ShipmentTracker
-              currentStatus={box.status}
-              trackingNumber="TRK987654321"
-              estimatedDelivery="April 24, 2025"
-            />
+        {box.status === "stored" ? null : (
+          <div className=" md:flex-row justify-between items-start md:items-center mt-4 border-b border-gray-200 dark:border-gray-700 pb-4">
+            <div>
+              <ShipmentTracker
+                currentStatus={box.status}
+                trackingNumber="TRK987654321"
+                estimatedDelivery="April 24, 2025"
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="mt-8">
           <div className="flex flex-col md:flex-row gap-6 mt-4">
@@ -108,12 +127,20 @@ const BoxCard = ({ box }: { box: Box }) => {
                 switch (box.status) {
                   case "in_transit":
                     return (
-                      <Button onClick={handleReceived} disabled={isPending}>
-                        {isPending ? "Updating..." : "Mark as Received"}
-                      </Button>
+                      <NextStepDialogButton
+                        option={box.status}
+                        action={handleReceived}
+                        isPending={isPending}
+                      />
                     );
                   case "pending_pack":
-                    return <Button>Request pick up</Button>;
+                    return (
+                      <NextStepDialogButton
+                        option={box.status}
+                        action={handlePickUp}
+                        isPending={isPending}
+                      />
+                    );
                   default:
                     return null;
                 }

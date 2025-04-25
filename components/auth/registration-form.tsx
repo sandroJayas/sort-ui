@@ -14,7 +14,6 @@ export function RegistrationForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -42,7 +41,6 @@ export function RegistrationForm({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            name,
             email,
             password,
           }),
@@ -97,17 +95,6 @@ export function RegistrationForm({
           </div>
 
           <div className="flex flex-col gap-6">
-            <div className="grid gap-2">
-              <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="John Doe"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <Input
