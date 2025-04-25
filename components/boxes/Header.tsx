@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import StoreBoxWizard from "@/components/boxes/StoreBoxWizard";
 
 const Header = () => {
   return (
@@ -45,10 +46,7 @@ const Header = () => {
             </SelectContent>
           </Select>
         </div>
-        <Button size={"lg"}>
-          <PlusIcon />
-          Store Boxes
-        </Button>
+        <StoreBoxWizard />
       </div>
     </>
   );
