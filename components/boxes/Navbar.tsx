@@ -36,7 +36,7 @@ export function DashboardNavbar() {
   return (
     <nav className="top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm border-b">
       <div className="container mx-auto px-4 max-w-6xl">
-        <div className="flex items-center justify-between py-4 border-b">
+        <div className="flex items-center justify-between py-4">
           {/* Logo */}
           <div className={"flex items-center gap-8"}>
             <SortLogo />

@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 
 import { ChevronLeft, ChevronRight, PlusIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, isUserValid } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { useUser } from "@/hooks/useUser";
 import { useCreateBox } from "@/hooks/useCreateBox";
@@ -94,18 +94,13 @@ export default function StoreBoxWizard() {
     setAppointmentDate("");
   };
 
-  const isUserValid =
-    user &&
-    user.first_name &&
-    user.last_name &&
-    user.address_line_1 &&
-    user.city &&
-    user.postal_code &&
-    user.phone_number;
-
   return (
     <>
-      <Button size={"lg"} onClick={() => setOpen(true)}>
+      <Button
+        disabled={!isUserValid(user)}
+        size={"lg"}
+        onClick={() => setOpen(true)}
+      >
         <PlusIcon />
         Store Boxes
       </Button>
@@ -178,7 +173,7 @@ export default function StoreBoxWizard() {
                 {currentStep === 2 && (
                   <ShippingStep
                     packingMethod={packingMethod}
-                    user={isUserValid ? user : null}
+                    user={user ?? null}
                   />
                 )}
 
@@ -187,7 +182,7 @@ export default function StoreBoxWizard() {
                     packingMethod={packingMethod}
                     boxCount={boxCount}
                     appointmentDate={appointmentDate}
-                    user={isUserValid ? user : null}
+                    user={user ?? null}
                   />
                 )}
               </motion.div>

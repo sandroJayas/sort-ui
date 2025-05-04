@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { User } from "@/types/user";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -13,4 +14,16 @@ export function formatTimeForDisplay(isoString: string): string {
     day: "numeric",
     timeZone: "UTC",
   }).format(date);
+}
+
+export function isUserValid(user: User | undefined): boolean {
+  return !!(
+    user &&
+    user.first_name &&
+    user.last_name &&
+    user.address_line_1 &&
+    user.city &&
+    user.postal_code &&
+    user.phone_number
+  );
 }
