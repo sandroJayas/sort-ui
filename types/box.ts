@@ -21,11 +21,25 @@ export type Box = {
   items: Item[];
   created_at: string;
   updated_at: string;
-  pickup_address: {
-    street: string;
-    zip_code: string;
-    city: string;
-    state: string;
-    country: string;
-  };
+  pickup_address: Address;
+};
+
+export type Address = {
+  street: string;
+  zip_code: string;
+  city: string;
+  state: string;
+  country: string;
+};
+
+export type CreateBoxRequest = {
+  packing_mode: "self" | "sort";
+  item_name?: string;
+  item_note?: string;
+  pickup_address: Address;
+  quantity?: number;
+};
+
+export type CreateBoxResponse = {
+  ids: string[];
 };

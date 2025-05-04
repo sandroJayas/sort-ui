@@ -18,6 +18,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
+import { useUser } from "@/hooks/useUser";
+import { useCreateBox } from "@/hooks/useCreateBox";
+import { toast } from "sonner";
 
 // Define the steps for the wizard
 const steps = [
@@ -35,6 +38,8 @@ export default function StoreBoxWizard() {
   );
   const [boxCount, setBoxCount] = useState(3);
   const [appointmentDate, setAppointmentDate] = useState("");
+  const { data: user, isLoading } = useUser();
+  const { mutate, isPending } = useCreateBox();
 
   const nextStep = () => {
     if (currentStep < steps.length - 1) {
@@ -49,8 +54,35 @@ export default function StoreBoxWizard() {
   };
 
   const handleComplete = () => {
-    // Handle form submission
-    alert("Order submitted successfully!");
+    if (packingMethod === null) {
+      return;
+    }
+
+    mutate(
+      {
+        packing_mode: packingMethod,
+        item_name: "Books",
+        item_note: "Pack carefully",
+        pickup_address: {
+          street:
+            user?.address_line_1 +
+            (user?.address_line_2 ? " " + user?.address_line_2 : ""),
+          zip_code: user?.postal_code ?? "",
+          city: user?.city ?? "",
+          state: "NY",
+          country: "USA",
+        },
+        quantity: boxCount,
+      },
+      {
+        onSuccess: (data) => {
+          toast.success(`Created box(es) with IDs: ${data.ids.join(", ")}`);
+        },
+        onError: (error) => {
+          toast.error("Failed to create box", { description: error.message });
+        },
+      },
+    );
     setOpen(false);
     // Reset the form
     setCurrentStep(0);
@@ -68,7 +100,7 @@ export default function StoreBoxWizard() {
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden">
-          <DialogHeader className="bg-purple-600 p-6 text-white">
+          <DialogHeader className="bg-gray-800 p-6 text-white">
             <DialogTitle className="text-2xl font-bold">
               Store Your Items with Sort
             </DialogTitle>
@@ -83,7 +115,7 @@ export default function StoreBoxWizard() {
                     className={cn(
                       "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium",
                       currentStep >= index
-                        ? "bg-purple-600 text-white"
+                        ? "bg-gray-800 text-white"
                         : "bg-gray-200 text-gray-500",
                     )}
                   >
@@ -95,7 +127,7 @@ export default function StoreBoxWizard() {
             </div>
             <div className="w-full bg-gray-200 h-2 rounded-full">
               <div
-                className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+                className="bg-gray-800 h-2 rounded-full transition-all duration-300"
                 style={{
                   width: `${(currentStep / (steps.length - 1)) * 100}%`,
                 }}
@@ -124,13 +156,13 @@ export default function StoreBoxWizard() {
                         className={cn(
                           "border rounded-lg p-6 cursor-pointer transition-all",
                           packingMethod === "self"
-                            ? "border-purple-600 bg-purple-50"
-                            : "border-gray-200 hover:border-purple-300",
+                            ? "border-gray-800 bg-purple-50"
+                            : "border-gray-200 hover:border-gray-600",
                         )}
                         onClick={() => setPackingMethod("self")}
                       >
                         <div className="flex items-center justify-center mb-4">
-                          <Box className="w-12 h-12 text-purple-600" />
+                          <Box className="w-12 h-12 text-gray-800" />
                         </div>
                         <h4 className="text-lg font-medium text-center mb-2">
                           Self Packing
@@ -144,13 +176,13 @@ export default function StoreBoxWizard() {
                         className={cn(
                           "border rounded-lg p-6 cursor-pointer transition-all",
                           packingMethod === "sort"
-                            ? "border-purple-600 bg-purple-50"
-                            : "border-gray-200 hover:border-purple-300",
+                            ? "border-gray-800 bg-purple-50"
+                            : "border-gray-200 hover:border-gray-600",
                         )}
                         onClick={() => setPackingMethod("sort")}
                       >
                         <div className="flex items-center justify-center mb-4">
-                          <PackageCheck className="w-12 h-12 text-purple-600" />
+                          <PackageCheck className="w-12 h-12 text-gray-800" />
                         </div>
                         <h4 className="text-lg font-medium text-center mb-2">
                           Packed by Sort
@@ -187,7 +219,7 @@ export default function StoreBoxWizard() {
                           >
                             -
                           </Button>
-                          <div className="text-4xl font-bold text-purple-600 w-16 text-center">
+                          <div className="text-4xl font-bold text-gray-800 w-16 text-center">
                             {boxCount}
                           </div>
                           <Button
@@ -203,7 +235,7 @@ export default function StoreBoxWizard() {
                         </div>
 
                         <div className="bg-purple-50 p-4 rounded-lg">
-                          <p className="text-sm text-purple-800">
+                          <p className="text-sm text-gray-800">
                             Each box is 24&#34; x 18&#34; x 18&#34; and can hold
                             up to 30 lbs.
                           </p>
@@ -233,7 +265,7 @@ export default function StoreBoxWizard() {
                         </div>
 
                         <div className="bg-purple-50 p-4 rounded-lg">
-                          <p className="text-sm text-purple-800">
+                          <p className="text-sm text-gray-800">
                             Our team will arrive within a 2-hour window of your
                             selected time.
                           </p>
@@ -263,7 +295,8 @@ export default function StoreBoxWizard() {
                           <input
                             type="text"
                             className="w-full p-2 border border-gray-300 rounded-md"
-                            placeholder="John"
+                            value={user?.first_name}
+                            readOnly={true}
                           />
                         </div>
                         <div>
@@ -273,7 +306,8 @@ export default function StoreBoxWizard() {
                           <input
                             type="text"
                             className="w-full p-2 border border-gray-300 rounded-md"
-                            placeholder="Doe"
+                            value={user?.last_name}
+                            readOnly={true}
                           />
                         </div>
                       </div>
@@ -285,7 +319,10 @@ export default function StoreBoxWizard() {
                         <input
                           type="text"
                           className="w-full p-2 border border-gray-300 rounded-md"
-                          placeholder="123 Main St"
+                          value={
+                            user?.address_line_1 + " " + user?.address_line_2
+                          }
+                          readOnly={true}
                         />
                       </div>
 
@@ -297,7 +334,8 @@ export default function StoreBoxWizard() {
                           <input
                             type="text"
                             className="w-full p-2 border border-gray-300 rounded-md"
-                            placeholder="New York"
+                            value={user?.city}
+                            readOnly={true}
                           />
                         </div>
                         <div className="col-span-1">
@@ -307,7 +345,8 @@ export default function StoreBoxWizard() {
                           <input
                             type="text"
                             className="w-full p-2 border border-gray-300 rounded-md"
-                            placeholder="NY"
+                            value={"NY"}
+                            readOnly={true}
                           />
                         </div>
                         <div className="col-span-1">
@@ -317,7 +356,8 @@ export default function StoreBoxWizard() {
                           <input
                             type="text"
                             className="w-full p-2 border border-gray-300 rounded-md"
-                            placeholder="10001"
+                            value={user?.postal_code}
+                            readOnly={true}
                           />
                         </div>
                       </div>
@@ -329,7 +369,8 @@ export default function StoreBoxWizard() {
                         <input
                           type="tel"
                           className="w-full p-2 border border-gray-300 rounded-md"
-                          placeholder="(123) 456-7890"
+                          value={user?.phone_number}
+                          readOnly={true}
                         />
                       </div>
                     </div>
@@ -366,7 +407,14 @@ export default function StoreBoxWizard() {
 
                       <div className="flex justify-between">
                         <span className="font-medium">Shipping Address:</span>
-                        <span>123 Main St, New York, NY 10001</span>
+                        <span>
+                          {user?.address_line_1 +
+                            (user?.address_line_2
+                              ? " " + user?.address_line_2
+                              : "") +
+                            ", New York, " +
+                            user?.postal_code}
+                        </span>
                       </div>
 
                       <div className="pt-4 border-t">
@@ -384,7 +432,7 @@ export default function StoreBoxWizard() {
                     </div>
 
                     <div className="bg-purple-50 p-4 rounded-lg">
-                      <p className="text-sm text-purple-800">
+                      <p className="text-sm text-gray-800">
                         By completing this order, you agree to Sort&#39;s Terms
                         of Service and Privacy Policy.
                       </p>
@@ -410,7 +458,7 @@ export default function StoreBoxWizard() {
               <Button
                 onClick={nextStep}
                 disabled={currentStep === 0 && !packingMethod}
-                className="bg-purple-600 hover:bg-purple-700"
+                className="bg-gray-800 hover:bg-gray-600"
               >
                 Next
                 <ChevronRight className="w-4 h-4 ml-2" />
@@ -418,7 +466,8 @@ export default function StoreBoxWizard() {
             ) : (
               <Button
                 onClick={handleComplete}
-                className="bg-purple-600 hover:bg-purple-700"
+                className="bg-gray-800 hover:bg-gray-600"
+                disabled={isLoading || isPending}
               >
                 Complete Order
               </Button>
