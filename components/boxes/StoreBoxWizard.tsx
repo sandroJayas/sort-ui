@@ -9,18 +9,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-import {
-  ChevronLeft,
-  ChevronRight,
-  Box,
-  PackageCheck,
-  PlusIcon,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, PlusIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { useUser } from "@/hooks/useUser";
 import { useCreateBox } from "@/hooks/useCreateBox";
 import { toast } from "sonner";
+import ChooseMethodStep from "./steps/ChooseMethodStep";
+import DetailsStep from "./steps/DetailsStep";
+import ShippingStep from "./steps/ShippingStep";
+import ReviewStep from "./steps/ReviewStep";
 
 // Define the steps for the wizard
 const steps = [
@@ -58,6 +56,11 @@ export default function StoreBoxWizard() {
       return;
     }
 
+    if (packingMethod === "sort") {
+      toast.error("not implemented");
+      return;
+    }
+
     mutate(
       {
         packing_mode: packingMethod,
@@ -90,6 +93,15 @@ export default function StoreBoxWizard() {
     setBoxCount(3);
     setAppointmentDate("");
   };
+
+  const isUserValid =
+    user &&
+    user.first_name &&
+    user.last_name &&
+    user.address_line_1 &&
+    user.city &&
+    user.postal_code &&
+    user.phone_number;
 
   return (
     <>
@@ -147,297 +159,36 @@ export default function StoreBoxWizard() {
                 className="min-h-[300px]"
               >
                 {currentStep === 0 && (
-                  <div className="space-y-6">
-                    <h3 className="text-xl font-semibold">
-                      How would you like to pack your items?
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div
-                        className={cn(
-                          "border rounded-lg p-6 cursor-pointer transition-all",
-                          packingMethod === "self"
-                            ? "border-gray-800 bg-purple-50"
-                            : "border-gray-200 hover:border-gray-600",
-                        )}
-                        onClick={() => setPackingMethod("self")}
-                      >
-                        <div className="flex items-center justify-center mb-4">
-                          <Box className="w-12 h-12 text-gray-800" />
-                        </div>
-                        <h4 className="text-lg font-medium text-center mb-2">
-                          Self Packing
-                        </h4>
-                        <p className="text-sm text-gray-600 text-center">
-                          We deliver boxes to you, you pack them, and we pick
-                          them up for storage.
-                        </p>
-                      </div>
-                      <div
-                        className={cn(
-                          "border rounded-lg p-6 cursor-pointer transition-all",
-                          packingMethod === "sort"
-                            ? "border-gray-800 bg-purple-50"
-                            : "border-gray-200 hover:border-gray-600",
-                        )}
-                        onClick={() => setPackingMethod("sort")}
-                      >
-                        <div className="flex items-center justify-center mb-4">
-                          <PackageCheck className="w-12 h-12 text-gray-800" />
-                        </div>
-                        <h4 className="text-lg font-medium text-center mb-2">
-                          Packed by Sort
-                        </h4>
-                        <p className="text-sm text-gray-600 text-center">
-                          Our team comes to your home, packs everything, and
-                          creates an inventory.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                  <ChooseMethodStep
+                    packingMethod={packingMethod}
+                    setPackingMethod={setPackingMethod}
+                  />
                 )}
 
                 {currentStep === 1 && (
-                  <div className="space-y-6">
-                    {packingMethod === "self" ? (
-                      <>
-                        <h3 className="text-xl font-semibold">
-                          How many boxes do you need?
-                        </h3>
-                        <p className="text-gray-600">
-                          We&#39;ll deliver these boxes to your address for you
-                          to pack.
-                        </p>
-
-                        <div className="flex items-center justify-center space-x-4 my-8">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() =>
-                              setBoxCount(Math.max(1, boxCount - 1))
-                            }
-                            disabled={boxCount <= 1}
-                          >
-                            -
-                          </Button>
-                          <div className="text-4xl font-bold text-gray-800 w-16 text-center">
-                            {boxCount}
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() =>
-                              setBoxCount(Math.min(10, boxCount + 1))
-                            }
-                            disabled={boxCount >= 10}
-                          >
-                            +
-                          </Button>
-                        </div>
-
-                        <div className="bg-purple-50 p-4 rounded-lg">
-                          <p className="text-sm text-gray-800">
-                            Each box is 24&#34; x 18&#34; x 18&#34; and can hold
-                            up to 30 lbs.
-                          </p>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <h3 className="text-xl font-semibold">
-                          Schedule a packing appointment
-                        </h3>
-                        <p className="text-gray-600">
-                          Select when you&#39;d like our team to come to your
-                          home.
-                        </p>
-
-                        <div className="space-y-4 my-6">
-                          <label className="block text-sm font-medium text-gray-700">
-                            Preferred date and time
-                          </label>
-                          <input
-                            type="datetime-local"
-                            className="w-full p-2 border border-gray-300 rounded-md"
-                            value={appointmentDate}
-                            onChange={(e) => setAppointmentDate(e.target.value)}
-                            min={new Date().toISOString().slice(0, 16)}
-                          />
-                        </div>
-
-                        <div className="bg-purple-50 p-4 rounded-lg">
-                          <p className="text-sm text-gray-800">
-                            Our team will arrive within a 2-hour window of your
-                            selected time.
-                          </p>
-                        </div>
-                      </>
-                    )}
-                  </div>
+                  <DetailsStep
+                    packingMethod={packingMethod}
+                    boxCount={boxCount}
+                    setBoxCount={setBoxCount}
+                    appointmentDate={appointmentDate}
+                    setAppointmentDate={setAppointmentDate}
+                  />
                 )}
 
                 {currentStep === 2 && (
-                  <div className="space-y-6">
-                    <h3 className="text-xl font-semibold">
-                      Shipping Information
-                    </h3>
-                    <p className="text-gray-600">
-                      {packingMethod === "self"
-                        ? "Where should we deliver your empty boxes?"
-                        : "Where should our team meet you for packing?"}
-                    </p>
-
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            First Name
-                          </label>
-                          <input
-                            type="text"
-                            className="w-full p-2 border border-gray-300 rounded-md"
-                            value={user?.first_name}
-                            readOnly={true}
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Last Name
-                          </label>
-                          <input
-                            type="text"
-                            className="w-full p-2 border border-gray-300 rounded-md"
-                            value={user?.last_name}
-                            readOnly={true}
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Address
-                        </label>
-                        <input
-                          type="text"
-                          className="w-full p-2 border border-gray-300 rounded-md"
-                          value={
-                            user?.address_line_1 + " " + user?.address_line_2
-                          }
-                          readOnly={true}
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-4">
-                        <div className="col-span-1">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            City
-                          </label>
-                          <input
-                            type="text"
-                            className="w-full p-2 border border-gray-300 rounded-md"
-                            value={user?.city}
-                            readOnly={true}
-                          />
-                        </div>
-                        <div className="col-span-1">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            State
-                          </label>
-                          <input
-                            type="text"
-                            className="w-full p-2 border border-gray-300 rounded-md"
-                            value={"NY"}
-                            readOnly={true}
-                          />
-                        </div>
-                        <div className="col-span-1">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            ZIP
-                          </label>
-                          <input
-                            type="text"
-                            className="w-full p-2 border border-gray-300 rounded-md"
-                            value={user?.postal_code}
-                            readOnly={true}
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Phone Number
-                        </label>
-                        <input
-                          type="tel"
-                          className="w-full p-2 border border-gray-300 rounded-md"
-                          value={user?.phone_number}
-                          readOnly={true}
-                        />
-                      </div>
-                    </div>
-                  </div>
+                  <ShippingStep
+                    packingMethod={packingMethod}
+                    user={isUserValid ? user : null}
+                  />
                 )}
 
                 {currentStep === 3 && (
-                  <div className="space-y-6">
-                    <h3 className="text-xl font-semibold">Review Your Order</h3>
-
-                    <div className="bg-gray-50 p-4 rounded-lg space-y-4">
-                      <div className="flex justify-between">
-                        <span className="font-medium">Service Type:</span>
-                        <span>
-                          {packingMethod === "self"
-                            ? "Self Packing"
-                            : "Packed by Sort"}
-                        </span>
-                      </div>
-
-                      {packingMethod === "self" ? (
-                        <div className="flex justify-between">
-                          <span className="font-medium">Number of Boxes:</span>
-                          <span>{boxCount}</span>
-                        </div>
-                      ) : (
-                        <div className="flex justify-between">
-                          <span className="font-medium">Appointment:</span>
-                          <span>
-                            {new Date(appointmentDate).toLocaleString()}
-                          </span>
-                        </div>
-                      )}
-
-                      <div className="flex justify-between">
-                        <span className="font-medium">Shipping Address:</span>
-                        <span>
-                          {user?.address_line_1 +
-                            (user?.address_line_2
-                              ? " " + user?.address_line_2
-                              : "") +
-                            ", New York, " +
-                            user?.postal_code}
-                        </span>
-                      </div>
-
-                      <div className="pt-4 border-t">
-                        <div className="flex justify-between font-bold">
-                          <span>Estimated Total:</span>
-                          <span>
-                            $
-                            {packingMethod === "self" ? boxCount * 7.99 : 99.99}
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">
-                          Final price may vary based on actual storage duration
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="bg-purple-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-800">
-                        By completing this order, you agree to Sort&#39;s Terms
-                        of Service and Privacy Policy.
-                      </p>
-                    </div>
-                  </div>
+                  <ReviewStep
+                    packingMethod={packingMethod}
+                    boxCount={boxCount}
+                    appointmentDate={appointmentDate}
+                    user={isUserValid ? user : null}
+                  />
                 )}
               </motion.div>
             </AnimatePresence>
