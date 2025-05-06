@@ -1,7 +1,6 @@
 import React from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -11,7 +10,15 @@ import {
 } from "@/components/ui/select";
 import StoreBoxWizard from "@/components/boxes/StoreBoxWizard";
 
-const Header = () => {
+const Header = ({
+  boxes,
+  setTimeFilter,
+  setNameFilter,
+}: {
+  boxes: number;
+  setTimeFilter: (timeFilter: string) => void;
+  setNameFilter: (name: string | null) => void;
+}) => {
   return (
     <>
       <div className="grid md:flex md:justify-between md:items-center gap-4 mb-6">
@@ -21,20 +28,30 @@ const Header = () => {
           <div className="relative flex-grow">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
-              className="pl-10 pr-4 py-2 w-full md:w-80 border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+              className="pl-10 pr-4 py-2 w-full md:w-80 border-gray-300 h-10 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
               placeholder="Search all boxes"
+              //TODO detect stop typing
+              onChange={(event) => {
+                setNameFilter(
+                  event.target.value === "" ? null : event.target.value,
+                );
+              }}
             />
           </div>
-          <Button variant={"outline"}>Search Boxes</Button>
         </div>
       </div>
       <div className="grid md:flex md:justify-between md:items-center gap-4 mb-4">
         <div className={"flex items-center gap-4 mb-4"}>
           <div className="text-sm font-medium">
-            <span className="font-bold">1 box</span> updated in
+            <span className="font-bold">{boxes} box</span> created in
           </div>
 
-          <Select defaultValue="3months">
+          <Select
+            defaultValue="3months"
+            onValueChange={(value) => {
+              setTimeFilter(value);
+            }}
+          >
             <SelectTrigger className="w-[160px] h-9 text-sm border-gray-300 dark:border-gray-600">
               <SelectValue placeholder="Time" />
             </SelectTrigger>
