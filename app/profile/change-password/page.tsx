@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import Container from "@/components/shared/Container";
 import ChangePasswordForm from "@/components/profile/ChangePasswordForm";
 
-export default function PersonalInformationPage() {
+export default function ChangePasswordPage() {
   return (
     <>
       <DashboardNavbar />
