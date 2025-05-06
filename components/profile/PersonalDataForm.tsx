@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -117,61 +117,30 @@ const PersonalDataForm = () => {
   }
 
   return (
-    <Card className="mt-6">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="mx-6 mt-6">
-          <TabsTrigger value="personal">Personal Details</TabsTrigger>
-          <TabsTrigger value="address">Address</TabsTrigger>
-        </TabsList>
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <TabsList className="mx-6 mt-6">
+        <TabsTrigger value="personal">Personal Details</TabsTrigger>
+        <TabsTrigger value="address">Address</TabsTrigger>
+      </TabsList>
 
-        <TabsContent value="personal">
-          <div className="p-6">
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-6"
-                onSubmitCapture={switchTab}
-              >
-                {/* Personal Details */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="first_name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>First Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="First Name" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="last_name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Last Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Last Name" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {/* Contact Information */}
+      <TabsContent value="personal">
+        <div className="p-6">
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-6"
+              onSubmitCapture={switchTab}
+            >
+              {/* Personal Details */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="email"
-                  disabled={true}
+                  name="first_name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>First Name</FormLabel>
                       <FormControl>
-                        <Input type="email" placeholder="Email" {...field} />
+                        <Input placeholder="First Name" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -179,139 +148,164 @@ const PersonalDataForm = () => {
                 />
                 <FormField
                   control={form.control}
-                  name="phone_number"
+                  name="last_name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Phone Number</FormLabel>
+                      <FormLabel>Last Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Last Name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Contact Information */}
+              <FormField
+                control={form.control}
+                name="email"
+                disabled={true}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="Email" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="phone_number"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone Number</FormLabel>
+                    <FormControl>
+                      <Input type="tel" placeholder="Phone Number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="flex justify-end">
+                <Button type="submit" disabled={isPending} size={"lg"}>
+                  {isPending ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </div>
+      </TabsContent>
+
+      <TabsContent value="address">
+        <CardContent className="pt-6">
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-6"
+              onSubmitCapture={switchTab}
+            >
+              <FormField
+                control={form.control}
+                name="address_line_1"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Address Line 1</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Address Line 1" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="address_line_2"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Address Line 2</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Address Line 2" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="city"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>City</FormLabel>
+                      <FormControl>
+                        <Input placeholder="City" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="space-y-2">
+                  <Label htmlFor="state">State/Province</Label>
+                  <Input
+                    id="state"
+                    name="state"
+                    placeholder="State"
+                    value={"New York"}
+                    readOnly={true}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="postal_code"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Postal Code</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Postal Code" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="country"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Country</FormLabel>
                       <FormControl>
                         <Input
-                          type="tel"
-                          placeholder="Phone Number"
+                          placeholder="Country"
                           {...field}
+                          value={"United States"}
+                          readOnly={true}
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <div className="flex justify-end">
-                  <Button type="submit" disabled={isPending} size={"lg"}>
-                    {isPending ? "Saving..." : "Save Changes"}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </div>
-        </TabsContent>
+              </div>
 
-        <TabsContent value="address">
-          <CardContent className="pt-6">
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-6"
-                onSubmitCapture={switchTab}
-              >
-                <FormField
-                  control={form.control}
-                  name="address_line_1"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Address Line 1</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Address Line 1" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="address_line_2"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Address Line 2</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Address Line 2" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="city"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>City</FormLabel>
-                        <FormControl>
-                          <Input placeholder="City" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="space-y-2">
-                    <Label htmlFor="state">State/Province</Label>
-                    <Input
-                      id="state"
-                      name="state"
-                      placeholder="State"
-                      value={"New York"}
-                      readOnly={true}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="postal_code"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Postal Code</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Postal Code" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="country"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Country</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Country"
-                            {...field}
-                            value={"United States"}
-                            readOnly={true}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="flex justify-end">
-                  <Button type="submit" disabled={isPending} size={"lg"}>
-                    {isPending ? "Saving..." : "Save Changes"}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </CardContent>
-        </TabsContent>
-      </Tabs>
-    </Card>
+              <div className="flex justify-end">
+                <Button type="submit" disabled={isPending} size={"lg"}>
+                  {isPending ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </TabsContent>
+    </Tabs>
   );
 };
 
