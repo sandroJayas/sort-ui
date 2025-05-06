@@ -87,7 +87,6 @@ const PersonalDataForm = () => {
     });
   };
 
-  console.log(user);
   useEffect(() => {
     if (error) {
       toast.error(error?.name, {
@@ -196,7 +195,7 @@ const PersonalDataForm = () => {
                   )}
                 />
                 <div className="flex justify-end">
-                  <Button type="submit" disabled={isPending}>
+                  <Button type="submit" disabled={isPending} size={"lg"}>
                     {isPending ? "Saving..." : "Save Changes"}
                   </Button>
                 </div>
@@ -303,7 +302,7 @@ const PersonalDataForm = () => {
                 </div>
 
                 <div className="flex justify-end">
-                  <Button type="submit" disabled={isPending}>
+                  <Button type="submit" disabled={isPending} size={"lg"}>
                     {isPending ? "Saving..." : "Save Changes"}
                   </Button>
                 </div>

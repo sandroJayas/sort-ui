@@ -50,7 +50,7 @@ const Sidebar = (props: { tab: string }) => {
     return <LoadingSpinner />;
   }
   return (
-    <Card className="bg-white border rounded-md h-fit w-full md:w-64">
+    <Card className="rounded-md h-fit">
       <div className="px-6 pb-6 border-b">
         <h2 className="font-semibold">
           {user?.first_name + " " + user?.last_name}

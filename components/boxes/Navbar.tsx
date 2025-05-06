@@ -34,7 +34,7 @@ export function DashboardNavbar() {
     signOut({ callbackUrl: "/" });
   };
   return (
-    <nav className="top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm border-b">
+    <nav className="top-0 left-0 right-0 z-50 bg-white backdrop-blur-sm border-b">
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="flex items-center justify-between py-4">
           {/* Logo */}
@@ -43,19 +43,19 @@ export function DashboardNavbar() {
             <div className="hidden md:flex items-center gap-6">
               <Link
                 href="/dashboard"
-                className="text-sm hover:text-primary transition-colors space-x-5 tracking-wide"
+                className="text-sm hover:text-gray-500 transition-colors space-x-5 tracking-wide"
               >
                 Dashboard
               </Link>
               <Link
                 href="/boxes"
-                className="text-sm hover:text-primary transition-colors tracking-wide"
+                className="text-sm hover:text-gray-500 transition-colors tracking-wide"
               >
                 Boxes
               </Link>
               <Link
                 href="/subscription"
-                className="text-sm hover:text-primary transition-colors tracking-wide"
+                className="text-sm hover:text-gray-500 transition-colors tracking-wide"
               >
                 Subscription
               </Link>

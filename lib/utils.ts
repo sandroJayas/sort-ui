@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatTimeForDisplay(isoString: string): string {
+export function stringToDate(isoString: string): string {
   const date = new Date(isoString);
   return new Intl.DateTimeFormat("en-US", {
     year: "numeric",

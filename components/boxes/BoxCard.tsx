@@ -8,7 +8,7 @@ import { useUser } from "@/hooks/useUser";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import React, { useEffect } from "react";
 import { toast } from "sonner";
-import { formatTimeForDisplay } from "@/lib/utils";
+import { stringToDate } from "@/lib/utils";
 import { useUpdateBoxStatus } from "@/hooks/useUpdateBoxStatus";
 import NextStepDialogButton from "@/components/boxes/NextStepDialog";
 
@@ -67,7 +67,7 @@ const BoxCard = ({ box }: { box: Box }) => {
             <div className="text-gray-500 dark:text-gray-400 text-xs">
               BOX ORDER PLACED
             </div>
-            <div>{formatTimeForDisplay(box.created_at)}</div>
+            <div>{stringToDate(box.created_at)}</div>
           </div>
           <div>
             <div className="text-gray-500 dark:text-gray-400 text-xs">TYPE</div>
@@ -145,10 +145,18 @@ const BoxCard = ({ box }: { box: Box }) => {
                     return null;
                 }
               })()}
-              <Button variant="outline">Edit Box</Button>
-              <Button variant="outline">Add pictures</Button>
-              <Button variant="outline">Get box support</Button>
-              <Button variant="outline">Return Box</Button>
+              <Button variant="outline" size={"lg"} className={"mt-2"}>
+                Edit Box
+              </Button>
+              <Button variant="outline" size={"lg"} className={"mt-2"}>
+                Add pictures
+              </Button>
+              <Button variant="outline" size={"lg"} className={"mt-2"}>
+                Get box support
+              </Button>
+              <Button variant="outline" size={"lg"} className={"mt-2"}>
+                Return Box
+              </Button>
             </div>
           </div>
         </div>
