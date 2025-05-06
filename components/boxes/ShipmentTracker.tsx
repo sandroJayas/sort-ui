@@ -103,8 +103,8 @@ const ShipmentTracker = ({
                 <div
                   className={cn(
                     "relative flex items-center justify-center w-8 h-8 rounded-full z-10 transition-all",
-                    isCompleted ? "bg-gray-600" : "bg-gray-200",
-                    isCurrent ? "ring-4 ring-yellow-600" : "",
+                    isCompleted ? "bg-green-600" : "bg-gray-200",
+                    isCurrent ? "ring-4 ring-yellow-500 bg-gray-600" : "",
                   )}
                 >
                   {isCompleted ? (
