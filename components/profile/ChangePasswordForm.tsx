@@ -44,6 +44,8 @@ const PersonalDataForm = () => {
 
   //TODO change this
   const isPending = false;
+  // @ts-expect-error temporary
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function mutate(values, params) {
     toast.error("This has to be implemented in the backend");
   }
@@ -53,6 +55,7 @@ const PersonalDataForm = () => {
       onSuccess: () => {
         toast.success("Password updated successfully!");
       },
+      // @ts-expect-error temporary
       onError: (error) => {
         toast.error("Failed to change password", {
           description: error.message,
