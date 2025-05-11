@@ -15,7 +15,7 @@ export async function PATCH(req: NextRequest) {
   const body = await req.json();
 
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_STORAGE_SERVICE_URL}/boxes/${id}/status`,
+    `${process.env.STORAGE_SERVICE_URL}/boxes/${id}/status`,
     {
       method: "PATCH",
       headers: {

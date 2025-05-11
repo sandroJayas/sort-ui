@@ -10,14 +10,11 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_STORAGE_SERVICE_URL}/boxes`,
-    {
-      headers: {
-        Authorization: `Bearer ${session.accessToken}`,
-      },
+  const res = await fetch(`${process.env.STORAGE_SERVICE_URL}/boxes`, {
+    headers: {
+      Authorization: `Bearer ${session.accessToken}`,
     },
-  );
+  });
 
   const data = await res.json();
   return NextResponse.json(data);
@@ -33,17 +30,14 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json();
 
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_STORAGE_SERVICE_URL}/boxes`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${session.accessToken}`,
-      },
-      body: JSON.stringify(body),
+  const res = await fetch(`${process.env.STORAGE_SERVICE_URL}/boxes`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.accessToken}`,
     },
-  );
+    body: JSON.stringify(body),
+  });
 
   const data = await res.json();
   return new NextResponse(JSON.stringify(data), {
