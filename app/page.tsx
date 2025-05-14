@@ -139,7 +139,7 @@ export default function Home() {
   const faqInView = useInView(faqRef, { once: true, amount: 0.3 });
 
   return (
-    <div className="font-sans text-gray-900">
+    <div className="font-sans">
       {/* Hero */}
       <motion.header style={{ opacity: headerOpacity }} className="relative">
         <div
@@ -177,7 +177,19 @@ export default function Home() {
                 className="h-14 bg-[#FF9900] hover:bg-[#FFC107] flex items-center px-6"
               >
                 Get Started
-                <ChevronRight className="ml-2 h-5 w-5" />
+                <motion.div
+                  animate={{
+                    x: [0, 5, 0],
+                    transition: {
+                      repeat: Number.POSITIVE_INFINITY,
+                      repeatType: "loop",
+                      duration: 1.5,
+                      ease: "easeInOut",
+                    },
+                  }}
+                >
+                  <ChevronRight className="ml-2 h-6 w-6" />
+                </motion.div>
               </Button>
             </form>
           </motion.div>
