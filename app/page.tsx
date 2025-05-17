@@ -116,7 +116,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "How much does Sort cost?",
-    a: "Idk you have to talk with Alan",
+    a: "$20/month + $1/sq ft/month",
   },
   {
     q: "What can i store?",
