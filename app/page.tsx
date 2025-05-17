@@ -116,7 +116,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "How much does Sort cost?",
-    a: "$20/month + $1/sq ft/month",
+    a: "$19.99/month + $1/sq ft/month",
   },
   {
     q: "What can i store?",
@@ -164,7 +164,7 @@ export default function Home() {
               All Your Stuff, Stored from Home.
             </h1>
             <p className="text-lg md:text-2xl mb-6 text-gray-200 max-w-xl">
-              Starts at €19.99. Cancel at any time.
+              Starts at $19,99. Cancel at any time.
             </p>
             <form className="flex flex-col sm:flex-row gap-4 w-full max-w-xl">
               <Input
@@ -209,7 +209,7 @@ export default function Home() {
               </div>
               <div>
                 <h3 className="text-xl font-bold text-[#212121]">
-                  Store for only €19.99
+                  Store for only $19.99
                 </h3>
                 <p className="text-gray-500">
                   Our most affordable, totally unrestricted plan.
