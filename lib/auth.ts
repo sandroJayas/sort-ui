@@ -13,6 +13,7 @@ export const authOptions: NextAuthOptions = {
           audience: process.env.AUTH0_AUDIENCE,
         },
       },
+      wellKnown: `${process.env.AUTH0_ISSUER}/.well-known/openid-configuration`,
     }),
   ],
   session: {
@@ -35,6 +36,6 @@ export const authOptions: NextAuthOptions = {
       session.accessToken = token.accessToken;
       session.idToken = token.idToken as string;
       return session;
-    }
+    },
   },
 };
