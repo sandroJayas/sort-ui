@@ -6,13 +6,12 @@ import { authOptions } from "@/lib/auth";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
-
-  console.log(session);
-
   return (
     <>
       <DashboardNavbar />
-      <Container>something</Container>
+      <Container>
+        <p>{session?.user.email}</p> <p>{session?.accessToken}</p>
+      </Container>
     </>
   );
 }
