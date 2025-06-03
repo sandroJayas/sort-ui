@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/accordion";
 import { signIn } from "next-auth/react";
 
-
 // ——————————————————————————
 // Static data
 // ——————————————————————————
@@ -151,7 +150,10 @@ export default function Home() {
           <div className="absolute inset-0 bg-black/20" />
           <div className="container mx-auto px-8 pt-8 flex justify-between items-center relative z-10">
             <Logo />
-            <Button className="bg-[#1742B1] hover:bg-[#178FB1] text-white px-6 py-2" onClick={() => signIn("auth0")}>
+            <Button
+              className="bg-[#1742B1] hover:bg-[#178FB1] text-white px-6 py-2"
+              onClick={() => signIn("auth0", { callbackUrl: "/dashboard" })}
+            >
               Sign In
             </Button>
           </div>

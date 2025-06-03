@@ -22,6 +22,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useSession } from "next-auth/react";
 
 const profileSchema = z.object({
   first_name: z.string().min(1, "First name is required").max(50, "Too long"),
@@ -51,6 +52,7 @@ const profileSchema = z.object({
 const PersonalDataForm = () => {
   const [activeTab, setActiveTab] = useState("personal");
   const { data: user, isLoading, error } = useUser();
+  const { data: session } = useSession();
   const { mutate, isPending } = useUpdateProfile();
   type ProfileFormValues = z.infer<typeof profileSchema>;
   const form = useForm<ProfileFormValues>({
@@ -96,21 +98,21 @@ const PersonalDataForm = () => {
   }, [error]);
 
   useEffect(() => {
-    if (user) {
+    if (user || session) {
       form.reset({
-        first_name: user.first_name ?? "",
-        last_name: user.last_name ?? "",
-        email: user.email ?? "",
-        phone_number: user.phone_number ?? "",
-        address_line_1: user.address_line_1 ?? "",
-        address_line_2: user.address_line_2 ?? "",
-        city: user.city ?? "",
-        postal_code: user.postal_code ?? "",
+        first_name: user?.first_name ?? "",
+        last_name: user?.last_name ?? "",
+        email: session?.user.email ?? "",
+        phone_number: user?.phone_number ?? "",
+        address_line_1: user?.address_line_1 ?? "",
+        address_line_2: user?.address_line_2 ?? "",
+        city: user?.city ?? "",
+        postal_code: user?.postal_code ?? "",
         country: "United States",
-        payment_method_id: user.payment_method_id ?? "",
+        payment_method_id: user?.payment_method_id ?? "",
       });
     }
-  }, [user, form]);
+  }, [user, form, session]);
 
   if (isLoading) {
     return <LoadingSpinner />;
