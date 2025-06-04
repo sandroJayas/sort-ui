@@ -15,6 +15,11 @@ export async function GET() {
     },
   });
 
+  // Return null for 404s instead of an error
+  if (res.status === 404) {
+    return NextResponse.json(null);
+  }
+
   if (!res.ok) {
     return NextResponse.json(
       { error: "Failed to fetch user" },
