@@ -139,6 +139,38 @@ export default function Home() {
   const heroInView = useInView(heroRef, { once: true });
   const faqInView = useInView(faqRef, { once: true, amount: 0.3 });
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    // Better way to get form data
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+
+    if (!email) return;
+
+    try {
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to initiate signup");
+      }
+
+      const { authUrl } = await response.json();
+
+      // Redirect to Auth0 with pre-filled email
+      window.location.href = authUrl;
+    } catch (error) {
+      console.error("Signup error:", error);
+      // You might want to show an error message to the user here
+    }
+  };
+
   return (
     <div className="font-sans">
       {/* Hero */}
@@ -175,11 +207,16 @@ export default function Home() {
             <p className="text-lg md:text-2xl mb-6 text-gray-100 max-w-xl drop-shadow">
               Starts at $19.99. Cancel at any time.
             </p>
-            <form className="flex flex-col sm:flex-row gap-4 w-full max-w-xl">
+            <form
+              className="flex flex-col sm:flex-row gap-4 w-full max-w-xl"
+              onSubmit={handleSubmit}
+            >
               <Input
                 type="email"
+                name="email"
                 placeholder="Enter your email"
                 className="flex-grow h-14 bg-white border-0 shadow-md text-[#212121] placeholder:text-[#6C757D]"
+                required
               />
               <Button
                 type="submit"
@@ -350,14 +387,22 @@ export default function Home() {
               Ready to store? Enter your email to create or restart your
               membership.
             </p>
-            <div className="flex flex-col md:flex-row max-w-3xl mx-auto gap-2">
+            <form
+              className="flex flex-col md:flex-row max-w-3xl mx-auto gap-2"
+              onSubmit={handleSubmit}
+            >
               <Input
                 type="email"
+                name="email"
                 placeholder="Email address"
                 className="h-14 bg-white border border-gray-200 rounded-lg px-4 flex-grow text-[#212121] placeholder:text-[#6C757D] shadow-sm focus:shadow-md transition-shadow duration-200"
+                required
               />
               <motion.div whileTap={{ scale: 0.95 }}>
-                <Button className="h-14 bg-[#FF9900] hover:bg-[#FFC107] text-white text-xl rounded-lg px-8 whitespace-nowrap w-full md:w-auto transition-all duration-200 shadow-md hover:shadow-lg font-semibold">
+                <Button
+                  type="submit"
+                  className="h-14 bg-[#FF9900] hover:bg-[#FFC107] text-white text-xl rounded-lg px-8 whitespace-nowrap w-full md:w-auto transition-all duration-200 shadow-md hover:shadow-lg font-semibold"
+                >
                   Get Started
                   <motion.div
                     animate={{
@@ -374,7 +419,7 @@ export default function Home() {
                   </motion.div>
                 </Button>
               </motion.div>
-            </div>
+            </form>
           </motion.div>
         </div>
       </section>
@@ -434,7 +479,7 @@ export default function Home() {
 // ——————————————————————————
 // Logo component - Updated
 // ——————————————————————————
-function Logo({ isLight = false }) {
+function Logo({ isLight = false }: { isLight?: boolean }) {
   return (
     <div className="flex items-center space-x-2">
       <div
