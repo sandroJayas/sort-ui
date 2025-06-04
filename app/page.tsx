@@ -3,7 +3,14 @@
 import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronRight, BoxIcon } from "lucide-react";
+import {
+  ChevronRight,
+  BoxIcon,
+  Package,
+  Clock,
+  Shield,
+  Truck,
+} from "lucide-react";
 import {
   motion,
   useScroll,
@@ -50,7 +57,7 @@ const FEATURES = [
     id: "box",
     title: "Boxes Delivered to You",
     description: "We ship Sort storage boxes right to your door. For free.",
-    iconBg: "white",
+    iconBg: "bg-[#F8F9FA]",
     icon: (
       <Image
         src="/cards/card-1.svg"
@@ -65,7 +72,7 @@ const FEATURES = [
     title: "Pack on Your Schedule",
     description:
       "Take your time: fill each box with clothes, books, keepsakes. Anywhere, anytime.",
-    iconBg: "from-pink-500 to-pink-400",
+    iconBg: "bg-[#178FB1]/10",
     icon: (
       <Image
         src="/cards/card-2.svg"
@@ -79,8 +86,8 @@ const FEATURES = [
     id: "store",
     title: "We Pick Up & Store",
     description:
-      "Schedule a pick-up and we’ll collect your boxes and transport them to our secure facility.",
-    iconBg: "from-red-500 to-red-400",
+      "Schedule a pick-up and we'll collect your boxes and transport them to our secure facility.",
+    iconBg: "bg-[#FF9900]/10",
     icon: (
       <Image
         src="/cards/card-3.svg"
@@ -94,8 +101,8 @@ const FEATURES = [
     id: "retrieve",
     title: "Retrieve Whenever You Need",
     description:
-      "Need something back? Request a delivery and we’ll bring any box straight to you. For free",
-    iconBg: "from-blue-500 to-blue-400",
+      "Need something back? Request a delivery and we'll bring any box straight to you. For free.",
+    iconBg: "bg-[#1742B1]/10",
     icon: (
       <Image
         src="/cards/card-4.svg"
@@ -111,7 +118,7 @@ const FAQ_ITEMS = [
   {
     q: "What is Sort?",
     a:
-      "Sort is a convenient, on-demand storage service that lets you securely store personal items without ever visiting a storage unit." +
+      "Sort is a convenient, on-demand storage service that lets you securely store personal items without ever visiting a storage unit. " +
       "We deliver empty boxes to your door, you fill them at your convenience, and we handle pickup and storage. " +
       "When you need something back, just request a return. It's that simple.",
   },
@@ -120,14 +127,14 @@ const FAQ_ITEMS = [
     a: "$19.99/month + $1/sq ft/month",
   },
   {
-    q: "What can i store?",
+    q: "What can I store?",
     a:
       "You can store almost anything with Sort - from small items like clothes, books, or decorations to larger " +
-      "belongings like lamps, chairs, or even a couch. ",
+      "belongings like lamps, chairs, or even a couch.",
   },
   {
     q: "How do I cancel?",
-    a: "Log into your account, visit Subscription settings, and select “Cancel Plan.” No fees, no hassle.",
+    a: "Log into your account, visit Subscription settings, and select “Cancel Plan”. No fees, no hassle.",
   },
 ];
 
@@ -135,7 +142,7 @@ export default function Home() {
   const heroRef = useRef<HTMLDivElement>(null);
   const faqRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll();
-  const headerOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0.85]);
+  const headerOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0.95]);
   const heroInView = useInView(heroRef, { once: true });
   const faqInView = useInView(faqRef, { once: true, amount: 0.3 });
 
@@ -146,12 +153,17 @@ export default function Home() {
         <div
           ref={heroRef}
           className="h-[80vh] md:h-[85vh] bg-cover bg-center relative"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(23, 66, 177, 0.1), rgba(23, 66, 177, 0.2)), url('/hero-storage.jpg')",
+            backgroundColor: "#F8F9FA", // Fallback
+          }}
         >
-          <div className="absolute inset-0 bg-black/20" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/10" />
           <div className="container mx-auto px-8 pt-8 flex justify-between items-center relative z-10">
             <Logo />
             <Button
-              className="bg-[#1742B1] hover:bg-[#178FB1] text-white px-6 py-2"
+              className="bg-[#1742B1] hover:bg-[#178FB1] text-white px-6 py-2 transition-colors duration-200 shadow-md hover:shadow-lg"
               onClick={() => signIn("auth0", { callbackUrl: "/dashboard" })}
             >
               Sign In
@@ -164,21 +176,21 @@ export default function Home() {
             animate={heroInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-4 text-white max-w-2xl">
+            <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-4 text-white max-w-2xl drop-shadow-lg">
               All Your Stuff, Stored from Home.
             </h1>
-            <p className="text-lg md:text-2xl mb-6 text-gray-200 max-w-xl">
-              Starts at $19,99. Cancel at any time.
+            <p className="text-lg md:text-2xl mb-6 text-gray-100 max-w-xl drop-shadow">
+              Starts at $19.99. Cancel at any time.
             </p>
             <form className="flex flex-col sm:flex-row gap-4 w-full max-w-xl">
               <Input
                 type="email"
                 placeholder="Enter your email"
-                className="flex-grow h-14 bg-gray-100 border-0"
+                className="flex-grow h-14 bg-white border-0 shadow-md text-[#212121] placeholder:text-[#6C757D]"
               />
               <Button
                 type="submit"
-                className="h-14 bg-[#FF9900] hover:bg-[#FFC107] flex items-center px-6"
+                className="h-14 bg-[#FF9900] hover:bg-[#FFC107] text-white flex items-center px-6 transition-all duration-200 shadow-md hover:shadow-lg font-semibold"
               >
                 Get Started
                 <motion.div
@@ -202,25 +214,25 @@ export default function Home() {
 
       {/* Promo Banner */}
       <div
-        className="bg-gradient-to-r from-gray-900 to-[#1742B1] py-6"
+        className="bg-gradient-to-r from-[#1742B1] to-[#178FB1] py-6"
         aria-label="Promotional banner"
       >
         <div className="container mx-auto px-6">
-          <div className="bg-white rounded-lg p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="bg-white rounded-xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-lg">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 flex items-center justify-center bg-[#178FB1] rounded-full">
-                <BoxIcon className={"fill-white"} />
+              <div className="w-16 h-16 flex items-center justify-center bg-gradient-to-br from-[#FF9900] to-[#FFC107] rounded-full shadow-md">
+                <BoxIcon className="fill-white stroke-white" />
               </div>
               <div>
                 <h3 className="text-xl font-bold text-[#212121]">
                   Store for only $19.99
                 </h3>
-                <p className="text-gray-500">
+                <p className="text-[#6C757D]">
                   Our most affordable, totally unrestricted plan.
                 </p>
               </div>
             </div>
-            <Button className="bg-[#1742B1] hover:bg-[#178FB1]">
+            <Button className="bg-[#1742B1] hover:bg-[#178FB1] text-white transition-colors duration-200 shadow-md hover:shadow-lg">
               Learn more
             </Button>
           </div>
@@ -237,7 +249,7 @@ export default function Home() {
             {TRENDING_SHOWS.map((s, i) => (
               <div
                 key={s.id}
-                className="w-56 flex-shrink-0 rounded-lg overflow-hidden shadow-lg group relative"
+                className="w-56 flex-shrink-0 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 group relative"
               >
                 <Image
                   src={s.image}
@@ -257,10 +269,10 @@ export default function Home() {
                 )}
 
                 <div className="p-4 bg-white relative z-0">
-                  <span className="inline-block bg-[#178FB1] text-white rounded-full w-7 h-7 text-center leading-7 mr-2">
+                  <span className="inline-block bg-[#178FB1] text-white rounded-full w-7 h-7 text-center leading-7 mr-2 shadow-sm">
                     {i + 1}
                   </span>
-                  <span className="font-medium">{s.title}</span>
+                  <span className="font-medium text-[#212121]">{s.title}</span>
                 </div>
               </div>
             ))}
@@ -269,22 +281,28 @@ export default function Home() {
       </section>
 
       {/* Features */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-[#F8F9FA]">
         <div className="container mx-auto px-8 text-center">
           <h2 className="text-3xl font-bold mb-12 text-[#212121]">
             Why Choose Sort?
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {FEATURES.map((f) => (
-              <div key={f.id} className="p-6 bg-white rounded-xl shadow-md">
+              <motion.div
+                key={f.id}
+                className="p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300"
+                whileHover={{ y: -5 }}
+              >
                 <div
-                  className={`mx-auto w-20 h-20 mb-4 rounded-full bg-white flex items-center justify-center`}
+                  className={`mx-auto w-20 h-20 mb-4 rounded-full ${f.iconBg} flex items-center justify-center shadow-sm`}
                 >
                   {f.icon}
                 </div>
-                <h3 className="text-xl font-semibold mb-2">{f.title}</h3>
-                <p className="text-gray-600">{f.description}</p>
-              </div>
+                <h3 className="text-xl font-semibold mb-2 text-[#212121]">
+                  {f.title}
+                </h3>
+                <p className="text-[#6C757D]">{f.description}</p>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -311,12 +329,15 @@ export default function Home() {
                 transition={{ duration: 0.5, delay: idx * 0.1 }}
               >
                 <Accordion type="single" collapsible>
-                  <AccordionItem value={`faq-${idx}`} className="border-none">
-                    <AccordionTrigger className="w-full px-6 py-4 bg-gray-100 rounded-lg hover:bg-gray-200 text-left text-lg font-medium">
+                  <AccordionItem
+                    value={`faq-${idx}`}
+                    className="border rounded-lg shadow-sm"
+                  >
+                    <AccordionTrigger className="w-full px-6 py-4 bg-[#F8F9FA] rounded-t-lg hover:bg-gray-100 text-left text-lg font-medium text-[#212121] transition-colors duration-200">
                       {q}
                     </AccordionTrigger>
                     <AnimatePresence>
-                      <AccordionContent className="px-6 py-4 bg-white rounded-b-lg text-gray-700">
+                      <AccordionContent className="px-6 py-4 bg-white rounded-b-lg text-[#6C757D]">
                         {a}
                       </AccordionContent>
                     </AnimatePresence>
@@ -332,7 +353,7 @@ export default function Home() {
             animate={faqInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.5, delay: 0.6 }}
           >
-            <p className="text-lg md:text-xl mb-5">
+            <p className="text-lg md:text-xl mb-5 text-[#212121]">
               Ready to store? Enter your email to create or restart your
               membership.
             </p>
@@ -340,10 +361,10 @@ export default function Home() {
               <Input
                 type="email"
                 placeholder="Email address"
-                className="h-14 bg-[#F8F9FA] border border-[#6C757D]  rounded px-4 flex-grow text-[#212121] placeholder:text-[#6C757D] "
+                className="h-14 bg-white border border-gray-200 rounded-lg px-4 flex-grow text-[#212121] placeholder:text-[#6C757D] shadow-sm focus:shadow-md transition-shadow duration-200"
               />
               <motion.div whileTap={{ scale: 0.95 }}>
-                <Button className="h-14 bg-[#FF9900] hover:bg-[#FFC107] text-white text-xl rounded px-8 whitespace-nowrap w-full md:w-auto">
+                <Button className="h-14 bg-[#FF9900] hover:bg-[#FFC107] text-white text-xl rounded-lg px-8 whitespace-nowrap w-full md:w-auto transition-all duration-200 shadow-md hover:shadow-lg font-semibold">
                   Get Started
                   <motion.div
                     animate={{
@@ -366,14 +387,17 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-400 py-12">
+      <footer className="bg-[#212121] text-[#6C757D] py-12">
         <div className="container mx-auto px-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
           <div>
             <h4 className="text-white font-semibold mb-4">Company</h4>
             <ul className="space-y-2 text-sm">
               {["About", "Careers", "Press", "Blog"].map((l) => (
                 <li key={l}>
-                  <Link href="#" className="hover:text-white">
+                  <Link
+                    href="#"
+                    className="hover:text-white transition-colors duration-200"
+                  >
                     {l}
                   </Link>
                 </li>
@@ -386,7 +410,10 @@ export default function Home() {
               {["Help Centre", "Privacy Policy", "Terms of Use", "Contact"].map(
                 (l) => (
                   <li key={l}>
-                    <Link href="#" className="hover:text-white">
+                    <Link
+                      href="#"
+                      className="hover:text-white transition-colors duration-200"
+                    >
                       {l}
                     </Link>
                   </li>
@@ -394,10 +421,16 @@ export default function Home() {
               )}
             </ul>
           </div>
-          <div className="col-span-2 text-center sm:text-left">
-            <p className="text-sm">
-              &copy; {new Date().getFullYear()} Sort, Inc.
-            </p>
+          <div className="col-span-2 sm:col-span-1 md:col-span-2">
+            <div className="flex items-center justify-center sm:justify-start h-full">
+              <div className="text-center sm:text-left">
+                <Logo isLight />
+                <p className="text-sm mt-4">
+                  &copy; {new Date().getFullYear()} Sort, Inc. All rights
+                  reserved.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </footer>
@@ -406,26 +439,23 @@ export default function Home() {
 }
 
 // ——————————————————————————
-// Icon components
+// Logo component - Updated
 // ——————————————————————————
-function Logo() {
+function Logo({ isLight = false }) {
   return (
-    <svg
-      width="150"
-      height="80"
-      viewBox="0 0 200 80"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <text
-        x="0"
-        y="60"
-        fontFamily="Georgia, 'Times New Roman', serif"
-        fontSize="64"
-        fill="#1742B1"
-        fontWeight="bold"
+    <div className="flex items-center space-x-2">
+      <div
+        className={`w-10 h-10 ${isLight ? "bg-white" : "bg-[#1742B1]"} rounded-lg flex items-center justify-center shadow-sm`}
+      >
+        <BoxIcon
+          className={`w-6 h-6 ${isLight ? "text-[#1742B1]" : "text-white"}`}
+        />
+      </div>
+      <span
+        className={`text-2xl font-bold ${isLight ? "text-white" : "text-[#1742B1]"}`}
       >
         Sort
-      </text>
-    </svg>
+      </span>
+    </div>
   );
 }
