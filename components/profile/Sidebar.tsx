@@ -21,14 +21,9 @@ const Sidebar = (props: { tab: string }) => {
       active: props.tab == "authorization",
     },
     {
-      name: "Change password",
-      href: "change-password",
-      active: props.tab == "change-password",
-    },
-    {
-      name: "Two-factor authentication",
-      href: "#",
-      active: props.tab == "",
+      name: "Security settings",
+      href: "security",
+      active: props.tab == "security",
     },
     {
       name: "Subscription & plan",
