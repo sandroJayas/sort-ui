@@ -13,7 +13,6 @@ import {
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
-import { signOut } from "next-auth/react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,15 +22,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useQueryClient } from "@tanstack/react-query";
+import { useLogout } from "@/hooks/useLogout"; // Import your custom hook
 
 export function DashboardNavbar() {
   const [open, setOpen] = React.useState(false);
   const queryClient = useQueryClient();
+  const { logout } = useLogout();
 
   const handleLogout = () => {
     setOpen(false);
     queryClient.clear();
-    signOut({ callbackUrl: "/" });
+    logout();
   };
   return (
     <nav className="top-0 left-0 right-0 z-50 bg-white backdrop-blur-sm border-b">
