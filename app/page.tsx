@@ -3,14 +3,7 @@
 import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  ChevronRight,
-  BoxIcon,
-  Package,
-  Clock,
-  Shield,
-  Truck,
-} from "lucide-react";
+import { ChevronRight, BoxIcon } from "lucide-react";
 import {
   motion,
   useScroll,
