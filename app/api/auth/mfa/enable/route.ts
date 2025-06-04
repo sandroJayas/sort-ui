@@ -13,9 +13,6 @@ export async function POST() {
     process.env.AUTH0_ISSUER?.replace("https://", "").replace("/oauth2", "") ||
     "";
   const clientId = process.env.AUTH0_CLIENT_ID;
-  const redirectUri = encodeURIComponent(
-    `${process.env.NEXTAUTH_URL}/dashboard/settings/security`,
-  );
 
   // Auth0 will handle MFA enrollment automatically when the user logs in next time
   // We'll force a re-authentication with MFA enrollment

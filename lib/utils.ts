@@ -16,7 +16,7 @@ export function stringToDate(isoString: string): string {
   }).format(date);
 }
 
-export function isUserValid(user: User | undefined): boolean {
+export function isUserValid(user: User | undefined | null): boolean {
   return !!(
     user &&
     user.first_name &&
