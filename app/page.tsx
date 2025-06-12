@@ -11,7 +11,6 @@ import {
   useInView,
   AnimatePresence,
 } from "framer-motion";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Accordion,
@@ -20,6 +19,7 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion";
 import { signIn } from "next-auth/react";
+import { SortButton, SortCTAButton } from "@/components/sort/SortButton";
 
 // ——————————————————————————
 // Static data
@@ -187,12 +187,12 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/10" />
           <div className="container mx-auto px-8 pt-8 flex justify-between items-center relative z-10">
             <Logo />
-            <Button
-              className="bg-[#1742B1] hover:bg-[#178FB1] text-white px-6 py-2 transition-colors duration-200 shadow-md hover:shadow-lg"
+            <SortButton
+              className="px-6 py-2"
               onClick={() => signIn("auth0", { callbackUrl: "/dashboard" })}
             >
               Sign In
-            </Button>
+            </SortButton>
           </div>
 
           <motion.div
@@ -218,10 +218,7 @@ export default function Home() {
                 className="flex-grow h-14 bg-white border-0 shadow-md text-[#212121] placeholder:text-[#6C757D]"
                 required
               />
-              <Button
-                type="submit"
-                className="h-14 bg-[#FF9900] hover:bg-[#FFC107] text-white flex items-center px-6 transition-all duration-200 shadow-md hover:shadow-lg font-semibold"
-              >
+              <SortCTAButton type="submit" className="h-14 px-6">
                 Get Started
                 <motion.div
                   animate={{
@@ -236,7 +233,7 @@ export default function Home() {
                 >
                   <ChevronRight className="ml-2 h-6 w-6" />
                 </motion.div>
-              </Button>
+              </SortCTAButton>
             </form>
           </motion.div>
         </div>
@@ -262,9 +259,7 @@ export default function Home() {
                 </p>
               </div>
             </div>
-            <Button className="bg-[#1742B1] hover:bg-[#178FB1] text-white transition-colors duration-200 shadow-md hover:shadow-lg">
-              Learn more
-            </Button>
+            <SortButton>Learn more</SortButton>
           </div>
         </div>
       </div>
@@ -399,10 +394,7 @@ export default function Home() {
                 required
               />
               <motion.div whileTap={{ scale: 0.95 }}>
-                <Button
-                  type="submit"
-                  className="h-14 bg-[#FF9900] hover:bg-[#FFC107] text-white text-xl rounded-lg px-8 whitespace-nowrap w-full md:w-auto transition-all duration-200 shadow-md hover:shadow-lg font-semibold"
-                >
+                <SortCTAButton type="submit" className="h-14 text-xl px-8">
                   Get Started
                   <motion.div
                     animate={{
@@ -417,7 +409,7 @@ export default function Home() {
                   >
                     <ChevronRight className="ml-2 h-6 w-6" />
                   </motion.div>
-                </Button>
+                </SortCTAButton>
               </motion.div>
             </form>
           </motion.div>
