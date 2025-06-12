@@ -49,10 +49,10 @@ export function DashboardNavbar() {
                 Dashboard
               </Link>
               <Link
-                href="/boxes"
+                href="/storage"
                 className="text-sm hover:text-gray-500 transition-colors tracking-wide"
               >
-                Boxes
+                Storage
               </Link>
               <Link
                 href="/subscription"
@@ -120,7 +120,7 @@ export function DashboardNavbar() {
                 </Link>
                 <Separator />
                 <Link
-                  href="/boxes"
+                  href="/storage"
                   className="text-gray-600 hover:text-black transition-colors h-18 content-center"
                   onClick={() => setOpen(false)}
                 >

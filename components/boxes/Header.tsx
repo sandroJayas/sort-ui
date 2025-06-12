@@ -22,7 +22,7 @@ const Header = ({
   return (
     <>
       <div className="grid md:flex md:justify-between md:items-center gap-4 mb-6">
-        <h1 className="text-2xl font-semibold">My Boxes</h1>
+        <h1 className="text-2xl font-semibold">My Storage</h1>
 
         <div className="flex w-full md:w-auto gap-2">
           <div className="relative flex-grow">
