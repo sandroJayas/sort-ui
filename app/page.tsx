@@ -3,20 +3,20 @@
 import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronRight, BoxIcon } from "lucide-react";
+import { BoxIcon, ChevronRight } from "lucide-react";
 import {
+  AnimatePresence,
   motion,
+  useInView,
   useScroll,
   useTransform,
-  useInView,
-  AnimatePresence,
 } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import {
   Accordion,
+  AccordionContent,
   AccordionItem,
   AccordionTrigger,
-  AccordionContent,
 } from "@/components/ui/accordion";
 import { signIn } from "next-auth/react";
 import { SortButton, SortCTAButton } from "@/components/sort/SortButton";

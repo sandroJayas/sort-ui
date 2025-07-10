@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, Truck, Shield, DollarSign } from "lucide-react";
+import { DollarSign, Package, Shield, Truck } from "lucide-react";
 
 const features = [
   {
@@ -9,7 +9,8 @@ const features = [
   },
   {
     title: "Seamless Delivery",
-    description: "Simple accessibility via AI integrations and delivery partnerships",
+    description:
+      "Simple accessibility via AI integrations and delivery partnerships",
     icon: Truck,
   },
   {
@@ -19,7 +20,8 @@ const features = [
   },
   {
     title: "On-Demand Access",
-    description: "Your items available for shipping, receiving, and sending anytime",
+    description:
+      "Your items available for shipping, receiving, and sending anytime",
     icon: Package,
   },
 ];
@@ -33,12 +35,16 @@ export function Features() {
             Why Choose Sort?
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            We offer customers a seamless, tech-enabled solution for managing their stored belongings
+            We offer customers a seamless, tech-enabled solution for managing
+            their stored belongings
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {features.map((feature) => (
-            <Card key={feature.title} className="hover:shadow-lg transition-shadow">
+            <Card
+              key={feature.title}
+              className="hover:shadow-lg transition-shadow"
+            >
               <CardHeader>
                 <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center mb-4">
                   <feature.icon className="h-6 w-6 text-white" />
@@ -54,4 +60,4 @@ export function Features() {
       </div>
     </section>
   );
-} 
+}

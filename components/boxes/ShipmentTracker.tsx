@@ -2,11 +2,11 @@
 
 import type React from "react";
 import {
-  Package,
-  ClipboardCheck,
-  Truck,
   CheckCircle2,
+  ClipboardCheck,
+  Package,
   Shield,
+  Truck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BoxStatus } from "@/types/box";

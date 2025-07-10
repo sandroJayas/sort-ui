@@ -1,6 +1,5 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { signOut } from "next-auth/react";
-import { useQueryClient } from "@tanstack/react-query";
 
 interface LogoutResponse {
   logoutUrl?: string;

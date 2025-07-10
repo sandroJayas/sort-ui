@@ -10,7 +10,8 @@ export function Hero() {
             Modern self-storage alternative for cost conscious consumers
           </h1>
           <p className="text-xl sm:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Sort is a next-generation, on-demand storage company designed to eliminate the hassles and hidden costs of traditional self-storage.
+            Sort is a next-generation, on-demand storage company designed to
+            eliminate the hassles and hidden costs of traditional self-storage.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="bg-black text-white hover:bg-gray-800">
@@ -25,4 +26,4 @@ export function Hero() {
       </div>
     </section>
   );
-} 
+}

@@ -10,15 +10,23 @@ export function FutureOutlook() {
             Future Outlook
           </h2>
           <p className="text-xl text-gray-600 mb-8">
-            Every item available to ship, receive, and send with faster delivery times, anywhere.
+            Every item available to ship, receive, and send with faster delivery
+            times, anywhere.
           </p>
           <div className="bg-white p-8 rounded-lg shadow-lg mb-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Market Position</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">
+              Market Position
+            </h3>
             <p className="text-gray-600 mb-6">
-              Sort is positioned to disrupt the $40 billion self-storage industry—a market growing at 4.15% annually and projected to reach $85 billion by 2030—by delivering unmatched value through tech-driven innovation.
+              Sort is positioned to disrupt the $40 billion self-storage
+              industry—a market growing at 4.15% annually and projected to reach
+              $85 billion by 2030—by delivering unmatched value through
+              tech-driven innovation.
             </p>
             <p className="text-gray-600">
-              With your funding, we will accelerate our expansion into high-demand urban markets while deploying cutting-edge systems to solidify our competitive edge.
+              With your funding, we will accelerate our expansion into
+              high-demand urban markets while deploying cutting-edge systems to
+              solidify our competitive edge.
             </p>
           </div>
           <Button size="lg" className="bg-black text-white hover:bg-gray-800">
@@ -29,4 +37,4 @@ export function FutureOutlook() {
       </div>
     </section>
   );
-} 
+}

@@ -21,16 +21,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
-  Package,
-  Truck,
-  Camera,
   Calendar,
-  Clock,
+  Camera,
+  Check,
   ChevronLeft,
   ChevronRight,
-  Check,
-  Plus,
+  Clock,
   Minus,
+  Package,
+  Plus,
+  Truck,
 } from "lucide-react";
 import { useSlots } from "@/hooks/slots/useSlots";
 import { SlotResponse } from "@/types/slot";

@@ -1,5 +1,4 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import NextAuth from "next-auth";
 
 declare module "next-auth" {
   interface Session {
@@ -7,7 +6,7 @@ declare module "next-auth" {
       id: string;
       email: string;
       accountType?: string;
-      sub?: string
+      sub?: string;
     };
     accessToken?: string;
     idToken?: string;

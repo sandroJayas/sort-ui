@@ -5,10 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Calendar,
-  Package,
-  ImageIcon,
   Clock,
+  ImageIcon,
   MoreHorizontal,
+  Package,
 } from "lucide-react";
 import {
   DropdownMenu,

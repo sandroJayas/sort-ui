@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { OrderListResponse, OrderFilterRequest } from "@/types/order";
+import { OrderFilterRequest, OrderListResponse } from "@/types/order";
 
 interface OrdersResponse {
   orders: OrderListResponse[];

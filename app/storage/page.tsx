@@ -11,7 +11,6 @@ import { isUserValid } from "@/lib/utils";
 import Container from "@/components/shared/Container";
 import { useOrders } from "@/hooks/orders/useOrders";
 import OrderCard from "@/components/orders/OrderCard";
-import { OrderStatus } from "@/types/order";
 
 export default function BoxesPage() {
   const { data: ordersData, isLoading, error } = useOrders();

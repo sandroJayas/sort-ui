@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { UpdateOrderRequest, SuccessResponse } from "@/types/order";
+import { SuccessResponse, UpdateOrderRequest } from "@/types/order";
 
 interface UpdateOrderPayload {
   orderId: string;
