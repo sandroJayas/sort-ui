@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import StoreBoxWizard from "@/components/boxes/StoreBoxWizard";
+import OrderWizard from "@/components/orders/OrderWizard";
 
 const Header = ({
   boxes,
@@ -63,7 +63,7 @@ const Header = ({
             </SelectContent>
           </Select>
         </div>
-        <StoreBoxWizard />
+        <OrderWizard />
       </div>
     </>
   );

@@ -9,7 +9,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_USER_SERVICE_URL}/me`, {
+  const res = await fetch(`${process.env.USER_SERVICE_URL}/users/me`, {
     headers: {
       Authorization: `Bearer ${session.accessToken}`,
     },
