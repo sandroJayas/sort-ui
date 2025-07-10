@@ -32,11 +32,11 @@ import {
   Plus,
   Truck,
 } from "lucide-react";
-import { useSlots } from "@/hooks/slots/useSlots";
+import { useSlots } from "@/hooks/slot/useSlots";
 import { SlotResponse } from "@/types/slot";
 import { CreateOrderRequest, OrderType } from "@/types/order";
 import { useUser } from "@/hooks/useUser";
-import { useCreateOrder } from "@/hooks/orders/useCreateOrder";
+import { useCreateOrder } from "@/hooks/order/useCreateOrder";
 import { toast } from "sonner";
 
 const OrderWizard = () => {

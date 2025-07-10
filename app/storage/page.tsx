@@ -9,7 +9,7 @@ import { VerificationAlert } from "@/components/boxes/VerificationAlert";
 import { useUser } from "@/hooks/useUser";
 import { isUserValid } from "@/lib/utils";
 import Container from "@/components/shared/Container";
-import { useOrders } from "@/hooks/orders/useOrders";
+import { useOrders } from "@/hooks/order/useOrders";
 import OrderCard from "@/components/orders/OrderCard";
 
 export default function BoxesPage() {

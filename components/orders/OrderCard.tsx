@@ -27,7 +27,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { useCancelOrder } from "@/hooks/orders/useCancelOrder";
+import { useCancelOrder } from "@/hooks/order/useCancelOrder";
 import { toast } from "sonner";
 import { OrderStatus } from "@/types/order";
 
