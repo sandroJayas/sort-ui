@@ -2,14 +2,15 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 
-interface Params {
-  params: {
-    id: string;
-  };
+interface RouteParams {
+  id: string;
 }
 
 // POST /api/orders/:id/cancel - Cancel order
-export async function POST(req: NextRequest, { params }: Params) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<RouteParams> },
+) {
   const session = await getServerSession(authOptions);
 
   if (!session?.accessToken) {
@@ -17,9 +18,10 @@ export async function POST(req: NextRequest, { params }: Params) {
   }
 
   const body = await req.json();
+  const { id } = await params;
 
   const res = await fetch(
-    `${process.env.STORAGE_SERVICE_URL}/orders/${params.id}/cancel`,
+    `${process.env.STORAGE_SERVICE_URL}/orders/${id}/cancel`,
     {
       method: "POST",
       headers: {

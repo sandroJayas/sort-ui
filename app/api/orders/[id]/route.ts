@@ -2,28 +2,28 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 
-interface Params {
-  params: {
-    id: string;
-  };
+interface RouteParams {
+  id: string;
 }
 
 // GET /api/orders/:id - Get single order
-export async function GET(req: NextRequest, { params }: Params) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<RouteParams> },
+) {
   const session = await getServerSession(authOptions);
 
   if (!session?.accessToken) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const res = await fetch(
-    `${process.env.STORAGE_SERVICE_URL}/orders/${params.id}`,
-    {
-      headers: {
-        Authorization: `Bearer ${session.accessToken}`,
-      },
+  const { id } = await params;
+
+  const res = await fetch(`${process.env.STORAGE_SERVICE_URL}/orders/${id}`, {
+    headers: {
+      Authorization: `Bearer ${session.accessToken}`,
     },
-  );
+  });
 
   const data = await res.json();
   return new NextResponse(JSON.stringify(data), {
@@ -33,7 +33,10 @@ export async function GET(req: NextRequest, { params }: Params) {
 }
 
 // PATCH /api/orders/:id - Update order
-export async function PATCH(req: NextRequest, { params }: Params) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<RouteParams> },
+) {
   const session = await getServerSession(authOptions);
 
   if (!session?.accessToken) {
@@ -41,18 +44,16 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   }
 
   const body = await req.json();
+  const { id } = await params;
 
-  const res = await fetch(
-    `${process.env.STORAGE_SERVICE_URL}/orders/${params.id}`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${session.accessToken}`,
-      },
-      body: JSON.stringify(body),
+  const res = await fetch(`${process.env.STORAGE_SERVICE_URL}/orders/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.accessToken}`,
     },
-  );
+    body: JSON.stringify(body),
+  });
 
   const data = await res.json();
   return new NextResponse(JSON.stringify(data), {
