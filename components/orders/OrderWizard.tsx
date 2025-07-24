@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,11 +15,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Calendar,
   Camera,
@@ -31,95 +31,112 @@ import {
   Package,
   Plus,
   Truck,
+  AlertCircle,
 } from "lucide-react";
 import { useSlots } from "@/hooks/slot/useSlots";
-import { SlotResponse } from "@/types/slot";
-import { CreateOrderRequest, OrderType } from "@/types/order";
+import type { SlotResponse } from "@/types/slot";
+import { type CreateOrderRequest, OrderType } from "@/types/order";
 import { useUser } from "@/hooks/useUser";
 import { useCreateOrder } from "@/hooks/order/useCreateOrder";
 import { toast } from "sonner";
+import { PhotoUpload } from "@/components/photos/photo";
+
+const STEPS = {
+  SERVICE_TYPE: 1,
+  BOX_COUNT: 2,
+  PHOTO_UPLOAD: 3,
+  SLOT_SELECTION: 4,
+  SUMMARY: 5,
+} as const;
+
+const MIN_BOX_COUNT = 1;
+const MAX_BOX_COUNT = 10;
 
 const OrderWizard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [sessionId, setSessioId] = useState(() => crypto.randomUUID());
   const [orderData, setOrderData] = useState<Partial<CreateOrderRequest>>({
     order_type: OrderType.SELF_DROPOFF,
-    box_count: 1,
+    box_count: MIN_BOX_COUNT,
     photo_urls: [],
   });
-  const [photoUrls, setPhotoUrls] = useState<string[]>([""]);
   const [selectedSlot, setSelectedSlot] = useState<SlotResponse | null>(null);
-  const { data: user } = useUser();
-  const { mutate } = useCreateOrder();
 
+  const { data: user, isLoading: isLoadingUser, error: userError } = useUser();
+  const { mutate: createOrder, isPending: isCreatingOrder } = useCreateOrder();
+
+  // Fixed date range calculation
   const dateRange = useMemo(() => {
-    const d = new Date();
+    const now = new Date();
+    const startDate = new Date(now);
+    startDate.setDate(startDate.getDate() - 14);
+
+    const endDate = new Date(now);
+    endDate.setDate(endDate.getDate() + 28);
+
     return {
-      start_date: new Date(d.setDate(d.getDate() - 14)).toISOString(),
-      end_date: new Date(d.setDate(d.getDate() + 28)).toISOString(),
+      start_date: startDate.toISOString(),
+      end_date: endDate.toISOString(),
     };
   }, []);
 
-  const { data: availableSlots } = useSlots(dateRange);
+  const { data: availableSlots, isLoading: isLoadingSlots } =
+    useSlots(dateRange);
 
-  const resetWizard = () => {
-    setCurrentStep(1);
+  // Reset wizard state
+  const resetWizard = useCallback(() => {
+    setCurrentStep(STEPS.SERVICE_TYPE);
     setOrderData({
       order_type: OrderType.SELF_DROPOFF,
-      box_count: 1,
+      box_count: MIN_BOX_COUNT,
       photo_urls: [],
     });
-    setPhotoUrls([""]);
     setSelectedSlot(null);
-  };
+    setSessioId(() => crypto.randomUUID());
+  }, []);
 
-  const handleOpenModal = () => {
+  // Modal handlers
+  const handleOpenModal = useCallback(() => {
     setIsModalOpen(true);
     resetWizard();
-  };
+  }, [resetWizard]);
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setIsModalOpen(false);
     resetWizard();
-  };
+  }, [resetWizard]);
 
-  const nextStep = () => {
-    if (currentStep < 5) {
+  // Navigation handlers
+  const nextStep = useCallback(() => {
+    if (currentStep < STEPS.SUMMARY) {
       setCurrentStep(currentStep + 1);
     }
-  };
+  }, [currentStep]);
 
-  const prevStep = () => {
-    if (currentStep > 1) {
+  const prevStep = useCallback(() => {
+    if (currentStep > STEPS.SERVICE_TYPE) {
       setCurrentStep(currentStep - 1);
     }
-  };
+  }, [currentStep]);
 
-  const updateBoxCount = (increment: boolean) => {
-    const newCount = increment
-      ? (orderData.box_count || 1) + 1
-      : Math.max(1, (orderData.box_count || 1) - 1);
+  // Box count handlers
+  const updateBoxCount = useCallback((increment: boolean) => {
+    setOrderData((prev) => ({
+      ...prev,
+      box_count: increment
+        ? Math.min(MAX_BOX_COUNT, (prev.box_count || MIN_BOX_COUNT) + 1)
+        : Math.max(MIN_BOX_COUNT, (prev.box_count || MIN_BOX_COUNT) - 1),
+    }));
+  }, []);
 
-    setOrderData({ ...orderData, box_count: newCount });
-  };
+  // Photo handlers
+  const handlePhotosChange = useCallback((photos: string[]) => {
+    setOrderData((prev) => ({ ...prev, photo_urls: photos }));
+  }, []);
 
-  const addPhotoUrl = () => {
-    setPhotoUrls([...photoUrls, ""]);
-  };
-
-  const removePhotoUrl = (index: number) => {
-    if (photoUrls.length > 1) {
-      setPhotoUrls(photoUrls.filter((_, i) => i !== index));
-    }
-  };
-
-  const updatePhotoUrl = (index: number, url: string) => {
-    const newUrls = [...photoUrls];
-    newUrls[index] = url;
-    setPhotoUrls(newUrls);
-  };
-
-  const formatDateTime = (isoString: string) => {
+  // Format date/time helper
+  const formatDateTime = useCallback((isoString: string) => {
     const date = new Date(isoString);
     return {
       date: date.toLocaleDateString("en-US", {
@@ -133,49 +150,77 @@ const OrderWizard = () => {
         minute: "2-digit",
       }),
     };
-  };
+  }, []);
 
-  const handleSubmit = () => {
+  // Handle order submission
+  const handleSubmit = useCallback(() => {
+    if (!user || !selectedSlot) {
+      toast.error("Missing required information");
+      return;
+    }
+
     const finalOrder: CreateOrderRequest = {
       ...orderData,
-      photo_urls: photoUrls.filter((url) => url.trim() !== ""),
-      slot_id: selectedSlot?.id,
-      scheduled_date: selectedSlot?.start_time,
+      photo_urls: orderData.photo_urls || [],
+      slot_id: selectedSlot.id,
+      scheduled_date: selectedSlot.start_time,
       address: {
-        street: user?.address_line_1 + " " + user?.address_line_2,
-        zip_code: user?.postal_code,
-        city: user?.city,
-        country: user?.country,
+        street: [user.address_line_1, user.address_line_2]
+          .filter(Boolean)
+          .join(" ")
+          .trim(),
+        zip_code: user.postal_code || "",
+        city: user.city || "",
+        country: user.country || "",
       },
     } as CreateOrderRequest;
 
-    mutate(finalOrder, {
+    createOrder(finalOrder, {
       onSuccess: () => {
-        toast.success("order successfully created");
+        toast.success("Order successfully created");
+        handleCloseModal();
       },
       onError: (error) => {
-        toast.error(error?.name, {
-          description: error?.message,
+        toast.error(error?.name || "Failed to create order", {
+          description: error?.message || "Please try again later",
         });
       },
     });
-    handleCloseModal();
-  };
+  }, [user, selectedSlot, orderData, createOrder, handleCloseModal]);
 
-  const canProceedFromStep = (step: number) => {
-    switch (step) {
-      case 1:
-        return orderData.order_type !== undefined;
-      case 2:
-        return (orderData.box_count || 0) > 0;
-      case 3:
-        return photoUrls.some((url) => url.trim() !== "");
-      case 4:
-        return selectedSlot !== null;
-      default:
-        return true;
-    }
-  };
+  // Validation for proceeding to next step
+  const canProceedFromStep = useCallback(
+    (step: number): boolean => {
+      switch (step) {
+        case STEPS.SERVICE_TYPE:
+          return orderData.order_type !== undefined;
+        case STEPS.BOX_COUNT:
+          return (orderData.box_count || 0) >= MIN_BOX_COUNT;
+        case STEPS.PHOTO_UPLOAD:
+          return (orderData.photo_urls?.length || 0) > 0;
+        case STEPS.SLOT_SELECTION:
+          return selectedSlot !== null;
+        case STEPS.SUMMARY:
+          return !isCreatingOrder && !isLoadingUser && !!user;
+        default:
+          return true;
+      }
+    },
+    [orderData, selectedSlot, isCreatingOrder, isLoadingUser, user],
+  );
+
+  // Loading skeleton for slots
+  const SlotsSkeleton = () => (
+    <div className="grid gap-3">
+      {[1, 2, 3].map((i) => (
+        <Card key={i}>
+          <CardContent className="p-4">
+            <div className="h-16 w-full bg-gray-200 rounded animate-pulse" />
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
 
   return (
     <div>
@@ -185,7 +230,7 @@ const OrderWizard = () => {
           Create Order
         </Button>
 
-        <Dialog open={isModalOpen} onOpenChange={handleCloseModal}>
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create Storage Order</DialogTitle>
@@ -193,10 +238,10 @@ const OrderWizard = () => {
 
             {/* Progress indicator */}
             <div className="flex items-center justify-between mb-6">
-              {[1, 2, 3, 4, 5].map((step) => (
+              {Object.values(STEPS).map((step) => (
                 <div key={step} className="flex items-center">
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
                       step < currentStep
                         ? "bg-green-500 text-white"
                         : step === currentStep
@@ -206,17 +251,29 @@ const OrderWizard = () => {
                   >
                     {step < currentStep ? <Check className="w-4 h-4" /> : step}
                   </div>
-                  {step < 5 && (
+                  {step < STEPS.SUMMARY && (
                     <div
-                      className={`w-12 h-0.5 mx-2 ${step < currentStep ? "bg-green-500" : "bg-gray-200"}`}
+                      className={`w-12 h-0.5 mx-2 transition-colors ${
+                        step < currentStep ? "bg-green-500" : "bg-gray-200"
+                      }`}
                     />
                   )}
                 </div>
               ))}
             </div>
 
+            {/* User error alert */}
+            {userError && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Failed to load user information. Please refresh and try again.
+                </AlertDescription>
+              </Alert>
+            )}
+
             {/* Step 1: Service Type Selection */}
-            {currentStep === 1 && (
+            {currentStep === STEPS.SERVICE_TYPE && (
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">
                   Choose Your Service Type
@@ -229,10 +286,10 @@ const OrderWizard = () => {
                         : "hover:bg-gray-50"
                     }`}
                     onClick={() =>
-                      setOrderData({
-                        ...orderData,
+                      setOrderData((prev) => ({
+                        ...prev,
                         order_type: OrderType.SELF_DROPOFF,
-                      })
+                      }))
                     }
                   >
                     <CardHeader>
@@ -241,7 +298,7 @@ const OrderWizard = () => {
                         Self Drop-off
                       </CardTitle>
                       <CardDescription>
-                        Deliver your fully packed belongings to our warehouse
+                        Deliver your packed belongings to our warehouse
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -276,7 +333,7 @@ const OrderWizard = () => {
             )}
 
             {/* Step 2: Box Count Selection */}
-            {currentStep === 2 && (
+            {currentStep === STEPS.BOX_COUNT && (
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">
                   How many boxes do you have?
@@ -286,17 +343,22 @@ const OrderWizard = () => {
                     variant="outline"
                     size="icon"
                     onClick={() => updateBoxCount(false)}
-                    disabled={(orderData.box_count || 1) <= 1}
+                    disabled={
+                      (orderData.box_count || MIN_BOX_COUNT) <= MIN_BOX_COUNT
+                    }
                   >
                     <Minus className="w-4 h-4" />
                   </Button>
                   <div className="text-4xl font-bold w-20 text-center">
-                    {orderData.box_count}
+                    {orderData.box_count || MIN_BOX_COUNT}
                   </div>
                   <Button
                     variant="outline"
                     size="icon"
                     onClick={() => updateBoxCount(true)}
+                    disabled={
+                      (orderData.box_count || MIN_BOX_COUNT) >= MAX_BOX_COUNT
+                    }
                   >
                     <Plus className="w-4 h-4" />
                   </Button>
@@ -307,122 +369,115 @@ const OrderWizard = () => {
                     : `${orderData.box_count} boxes`}{" "}
                   selected for storage
                 </p>
+                {orderData.box_count === MAX_BOX_COUNT && (
+                  <p className="text-center text-sm text-orange-600">
+                    Maximum of {MAX_BOX_COUNT} boxes allowed per order
+                  </p>
+                )}
               </div>
             )}
 
             {/* Step 3: Photo Upload */}
-            {currentStep === 3 && (
+            {currentStep === STEPS.PHOTO_UPLOAD && (
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <Camera className="w-5 h-5" />
-                  Upload Photos of Your Boxes
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Please provide photos of your boxes for verification and
-                  clarity.
-                </p>
-
-                <div className="space-y-3">
-                  {photoUrls.map((url, index) => (
-                    <div key={index} className="flex gap-2">
-                      <div className="flex-1">
-                        <Label htmlFor={`photo-${index}`}>
-                          Photo URL {index + 1}
-                        </Label>
-                        <Input
-                          id={`photo-${index}`}
-                          placeholder="Enter image URL"
-                          value={url}
-                          className="my-3"
-                          onChange={(e) =>
-                            updatePhotoUrl(index, e.target.value)
-                          }
-                        />
-                      </div>
-                      {photoUrls.length > 1 && (
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="mt-6 bg-transparent"
-                          onClick={() => removePhotoUrl(index)}
-                        >
-                          <Minus className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </div>
-                  ))}
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <Camera className="w-5 h-5" />
+                    Upload Photos of Your Boxes
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Please provide clear photos of your packed boxes for
+                    verification. You can upload up to {orderData.box_count}{" "}
+                    photo
+                    {orderData.box_count !== 1 ? "s" : ""}.
+                  </p>
                 </div>
 
-                <Button
-                  variant="outline"
-                  onClick={addPhotoUrl}
-                  className="w-full bg-transparent"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Another Photo
-                </Button>
+                <PhotoUpload
+                  sessionId={sessionId}
+                  maxFiles={orderData.box_count || MIN_BOX_COUNT}
+                  maxFileSize={10 * 1024 * 1024}
+                  acceptedTypes={["image/jpeg", "image/png", "image/webp"]}
+                  onPhotosChange={handlePhotosChange}
+                />
               </div>
             )}
 
             {/* Step 4: Slot Selection */}
-            {currentStep === 4 && (
+            {currentStep === STEPS.SLOT_SELECTION && (
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold flex items-center gap-2">
                   <Calendar className="w-5 h-5" />
                   Choose Your Drop-off Time
                 </h3>
 
-                <div className="grid gap-3">
-                  {availableSlots?.slots.map((slot: SlotResponse) => {
-                    const { date, time } = formatDateTime(slot.start_time);
-                    const endTime = formatDateTime(slot.end_time).time;
+                {isLoadingSlots ? (
+                  <SlotsSkeleton />
+                ) : availableSlots?.slots && availableSlots.slots.length > 0 ? (
+                  <div className="grid gap-3 max-h-64 overflow-y-auto">
+                    {availableSlots.slots.map((slot: SlotResponse) => {
+                      const { date, time } = formatDateTime(slot.start_time);
+                      const endTime = formatDateTime(slot.end_time).time;
 
-                    return (
-                      <Card
-                        key={slot.id}
-                        className={`cursor-pointer transition-all ${
-                          !slot.is_available
-                            ? "opacity-50 cursor-not-allowed"
-                            : selectedSlot?.id === slot.id
-                              ? "ring-2 ring-blue-500 bg-blue-50"
-                              : "hover:bg-gray-50"
-                        }`}
-                        onClick={() =>
-                          slot.is_available && setSelectedSlot(slot)
-                        }
-                      >
-                        <CardContent className="p-4">
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <p className="font-medium">{date}</p>
-                              <p className="text-sm text-muted-foreground flex items-center gap-1">
-                                <Clock className="w-4 h-4" />
-                                {time} - {endTime}
-                              </p>
+                      return (
+                        <Card
+                          key={slot.id}
+                          className={`cursor-pointer transition-all ${
+                            !slot.is_available
+                              ? "opacity-50 cursor-not-allowed"
+                              : selectedSlot?.id === slot.id
+                                ? "ring-2 ring-blue-500 bg-blue-50"
+                                : "hover:bg-gray-50"
+                          }`}
+                          onClick={() =>
+                            slot.is_available && setSelectedSlot(slot)
+                          }
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <p className="font-medium">{date}</p>
+                                <p className="text-sm text-muted-foreground flex items-center gap-1">
+                                  <Clock className="w-4 h-4" />
+                                  {time} - {endTime}
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <Badge
+                                  variant={
+                                    slot.is_available ? "default" : "secondary"
+                                  }
+                                >
+                                  {slot.is_available ? "Available" : "Full"}
+                                </Badge>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {slot.available_capacity} spot
+                                  {slot.available_capacity !== 1
+                                    ? "s"
+                                    : ""}{" "}
+                                  left
+                                </p>
+                              </div>
                             </div>
-                            <div className="text-right">
-                              <Badge
-                                variant={
-                                  slot.is_available ? "default" : "secondary"
-                                }
-                              >
-                                {slot.is_available ? "Available" : "Full"}
-                              </Badge>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {slot.available_capacity} spots left
-                              </p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      No available slots found. Please try a different date
+                      range.
+                    </AlertDescription>
+                  </Alert>
+                )}
               </div>
             )}
 
             {/* Step 5: Recap and Submit */}
-            {currentStep === 5 && (
+            {currentStep === STEPS.SUMMARY && (
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Order Summary</h3>
 
@@ -448,7 +503,10 @@ const OrderWizard = () => {
                     <div>
                       <Label className="font-medium">Photos</Label>
                       <p className="text-sm">
-                        {photoUrls.filter((url) => url.trim()).length} photo(s)
+                        {orderData.photo_urls?.length || 0} photo
+                        {(orderData.photo_urls?.length || 0) !== 1
+                          ? "s"
+                          : ""}{" "}
                         uploaded
                       </p>
                     </div>
@@ -467,6 +525,21 @@ const OrderWizard = () => {
                         </p>
                       </div>
                     )}
+
+                    {user && (
+                      <>
+                        <Separator />
+                        <div>
+                          <Label className="font-medium">
+                            Drop-off Address
+                          </Label>
+                          <p className="text-sm">Sort Warehouse</p>
+                          <p className="text-sm text-muted-foreground">
+                            Address will be provided after confirmation
+                          </p>
+                        </div>
+                      </>
+                    )}
                   </CardContent>
                 </Card>
 
@@ -477,9 +550,16 @@ const OrderWizard = () => {
                     placeholder="Any special instructions or notes..."
                     value={orderData.notes || ""}
                     onChange={(e) =>
-                      setOrderData({ ...orderData, notes: e.target.value })
+                      setOrderData((prev) => ({
+                        ...prev,
+                        notes: e.target.value,
+                      }))
                     }
+                    maxLength={500}
                   />
+                  <p className="text-xs text-muted-foreground text-right">
+                    {orderData.notes?.length || 0}/500 characters
+                  </p>
                 </div>
               </div>
             )}
@@ -489,13 +569,13 @@ const OrderWizard = () => {
               <Button
                 variant="outline"
                 onClick={prevStep}
-                disabled={currentStep === 1}
+                disabled={currentStep === STEPS.SERVICE_TYPE}
               >
                 <ChevronLeft className="w-4 h-4 mr-2" />
                 Previous
               </Button>
 
-              {currentStep < 5 ? (
+              {currentStep < STEPS.SUMMARY ? (
                 <Button
                   onClick={nextStep}
                   disabled={!canProceedFromStep(currentStep)}
@@ -504,9 +584,18 @@ const OrderWizard = () => {
                   <ChevronRight className="w-4 h-4 ml-2" />
                 </Button>
               ) : (
-                <Button onClick={handleSubmit}>
-                  Submit Order
-                  <Check className="w-4 h-4 ml-2" />
+                <Button
+                  onClick={handleSubmit}
+                  disabled={!canProceedFromStep(currentStep) || isCreatingOrder}
+                >
+                  {isCreatingOrder ? (
+                    <>Creating Order...</>
+                  ) : (
+                    <>
+                      Submit Order
+                      <Check className="w-4 h-4 ml-2" />
+                    </>
+                  )}
                 </Button>
               )}
             </div>

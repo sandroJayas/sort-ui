@@ -352,6 +352,7 @@ export interface PhotoUploadRequest {
 }
 
 export interface PhotoUploadResponse {
+  id: string;
   urls: string[];
   uploaded_at: ISODateString;
 }

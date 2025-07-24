@@ -3,13 +3,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Calendar,
-  Clock,
-  ImageIcon,
-  MoreHorizontal,
-  Package,
-} from "lucide-react";
+import { Calendar, Clock, MoreHorizontal, Package } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,6 +24,7 @@ import { useState } from "react";
 import { useCancelOrder } from "@/hooks/order/useCancelOrder";
 import { toast } from "sonner";
 import { OrderStatus } from "@/types/order";
+import Image from "next/image";
 
 export interface OrderListResponse {
   id: string;
@@ -180,7 +175,7 @@ export default function OrderCard({ order }: OrderCardProps) {
                   key={index}
                   className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center border"
                 >
-                  <ImageIcon className="h-6 w-6 text-gray-400" />
+                  <Image src={url} alt={"image"} width={100} height={100} />
                 </div>
               ))}
               {order.photo_urls.length > 3 && (
