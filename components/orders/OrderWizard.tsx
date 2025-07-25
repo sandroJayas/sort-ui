@@ -161,6 +161,7 @@ const OrderWizard = () => {
 
     const finalOrder: CreateOrderRequest = {
       ...orderData,
+      session_id: sessionId,
       photo_urls: orderData.photo_urls || [],
       slot_id: selectedSlot.id,
       scheduled_date: selectedSlot.start_time,

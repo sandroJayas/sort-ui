@@ -115,6 +115,7 @@ export interface BatchIDResponse {
 // ==================== ORDER TYPES ====================
 
 export interface CreateOrderRequest {
+  session_id: string;
   order_type: OrderType;
   box_count: number; // 1-10
   photo_urls?: string[]; // Required for self_dropoff and ready_for_pickup
@@ -139,6 +140,7 @@ export type OrderExtraData = {
 export interface OrderResponse {
   id: string;
   user_id: string;
+  session_id: string;
   order_type: string;
   status: string;
   box_count: number;
