@@ -10,7 +10,7 @@ export async function PUT(req: NextRequest) {
 
   const body = await req.json();
 
-  const res = await fetch(`${process.env.USER_SERVICE_URL}/users/profile`, {
+  const res = await fetch(`${process.env.STORAGE_SERVICE_URL}/users/profile`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
