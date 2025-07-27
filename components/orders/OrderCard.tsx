@@ -25,6 +25,7 @@ import { useCancelOrder } from "@/hooks/order/useCancelOrder";
 import { toast } from "sonner";
 import { OrderStatus } from "@/types/order";
 import Image from "next/image";
+import Link from "next/link";
 
 export interface OrderListResponse {
   id: string;
@@ -109,12 +110,31 @@ export default function OrderCard({ order }: OrderCardProps) {
         <div className="flex items-start justify-between">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-lg">
-                {getOrderTypeLabel(order.order_type)}
-              </h3>
-              <Badge variant="outline" className={getStatusColor(order.status)}>
-                {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-              </Badge>
+              {order.status === OrderStatus.PROCESSING ? (
+                <>
+                  <p>
+                    We&#39;re ready to receive your boxes! please, bring them to
+                    this address:
+                  </p>
+                  <br />
+                  <Link href={"https://maps.app.goo.gl/ivcTDLRqFDXJV5Pt5"}>
+                    591 Central Ave, Brooklyn, NY 11207
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <h3 className="font-semibold text-lg">
+                    {getOrderTypeLabel(order.order_type)}
+                  </h3>
+                  <Badge
+                    variant="outline"
+                    className={getStatusColor(order.status)}
+                  >
+                    {order.status.charAt(0).toUpperCase() +
+                      order.status.slice(1)}
+                  </Badge>
+                </>
+              )}
             </div>
           </div>
 
@@ -128,7 +148,10 @@ export default function OrderCard({ order }: OrderCardProps) {
               <DropdownMenuItem
                 onClick={() => setShowCancelModal(true)}
                 className="text-red-600"
-                disabled={order.status !== OrderStatus.PENDING}
+                disabled={
+                  order.status === OrderStatus.COMPLETED ||
+                  order.status === OrderStatus.CANCELLED
+                }
               >
                 Cancel Order
               </DropdownMenuItem>
