@@ -239,9 +239,7 @@ export default function OrderCard({ order }: OrderCardProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="cancel-reason">
-                Reason for cancellation (optional)
-              </Label>
+              <Label htmlFor="cancel-reason">Reason for cancellation</Label>
               <Textarea
                 id="cancel-reason"
                 placeholder="Please let us know why you're canceling this order..."
@@ -266,7 +264,7 @@ export default function OrderCard({ order }: OrderCardProps) {
             <Button
               variant="destructive"
               onClick={handleCancelOrder}
-              disabled={isSubmitting}
+              disabled={isSubmitting || cancelReason === ""}
             >
               {isSubmitting ? "Canceling..." : "Cancel Order"}
             </Button>
