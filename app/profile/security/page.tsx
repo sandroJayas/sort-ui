@@ -1,4 +1,4 @@
-import { DashboardNavbar } from "@/components/boxes/Navbar";
+import { DashboardNavbar } from "@/components/shared/Navbar";
 import Sidebar from "@/components/profile/Sidebar";
 import type React from "react";
 import { Card } from "@/components/ui/card";

@@ -1,4 +1,4 @@
-import { DashboardNavbar } from "@/components/boxes/Navbar";
+import { DashboardNavbar } from "@/components/shared/Navbar";
 import React from "react";
 import Container from "@/components/shared/Container";
 import { getServerSession } from "next-auth";
