@@ -1,7 +1,23 @@
-import React, { ReactNode } from "react";
+import React, { JSX, memo } from "react";
 
-const Container = ({ children }: { children: ReactNode }) => {
-  return <div className="max-w-[1200px] mx-auto px-4 py-8">{children}</div>;
-};
+interface ContainerProps {
+  children: React.ReactNode;
+  className?: string;
+  as?: keyof JSX.IntrinsicElements;
+}
+
+const Container: React.FC<ContainerProps> = memo(
+  ({ children, className = "", as: Component = "div" }) => {
+    return (
+      <Component
+        className={`max-w-[1200px] mx-auto px-4 py-8 ${className}`.trim()}
+      >
+        {children}
+      </Component>
+    );
+  },
+);
+
+Container.displayName = "Container";
 
 export default Container;
