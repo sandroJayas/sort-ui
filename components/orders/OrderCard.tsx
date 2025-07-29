@@ -1,7 +1,15 @@
 "use client";
 
 import React, { useState, useCallback, memo } from "react";
-import { Calendar, Clock, MoreHorizontal, Package } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  MoreVertical,
+  Package,
+  MapPin,
+  ChevronRight,
+  X,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -38,28 +46,95 @@ interface OrderCardProps {
   order: OrderListResponse;
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  pending: "bg-yellow-100 text-yellow-800",
-  processing: "bg-[#E8F0FE] text-[#1742B1]",
-  in_fulfillment: "bg-blue-100 text-blue-800",
-  completed: "bg-green-100 text-green-800",
-  cancelled: "bg-red-100 text-red-800",
+const STATUS_CONFIG: Record<
+  string,
+  { color: string; bg: string; icon: string }
+> = {
+  pending: {
+    color: "text-amber-700",
+    bg: "bg-amber-50 border-amber-200",
+    icon: "⏳",
+  },
+  processing: {
+    color: "text-blue-700",
+    bg: "bg-blue-50 border-blue-200",
+    icon: "🔄",
+  },
+  in_fulfillment: {
+    color: "text-indigo-700",
+    bg: "bg-indigo-50 border-indigo-200",
+    icon: "📦",
+  },
+  completed: {
+    color: "text-green-700",
+    bg: "bg-green-50 border-green-200",
+    icon: "✅",
+  },
+  cancelled: {
+    color: "text-gray-700",
+    bg: "bg-gray-50 border-gray-200",
+    icon: "❌",
+  },
 };
 
-const ORDER_TYPE_LABELS: Record<string, string> = {
-  self_dropoff: "Self Drop-off",
-  ready_for_pickup: "Ready for Pickup",
-  box_provided: "Box Provided",
+const ORDER_TYPE_CONFIG: Record<
+  string,
+  { label: string; icon: React.ReactNode }
+> = {
+  self_dropoff: {
+    label: "Self Drop-off",
+    icon: <Package className="w-4 h-4" />,
+  },
+  ready_for_pickup: {
+    label: "Ready for Pickup",
+    icon: (
+      <svg
+        className="w-4 h-4"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+        />
+      </svg>
+    ),
+  },
+  box_provided: {
+    label: "Box Provided",
+    icon: (
+      <svg
+        className="w-4 h-4"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"
+        />
+      </svg>
+    ),
+  },
 };
 
-const getStatusColor = (status: string): string => {
-  return STATUS_COLORS[status.toLowerCase()] || "bg-gray-100 text-gray-800";
+const getStatusConfig = (status: string) => {
+  return STATUS_CONFIG[status.toLowerCase()] || STATUS_CONFIG.pending;
 };
 
-const getOrderTypeLabel = (orderType: string): string => {
+const getOrderTypeConfig = (orderType: string) => {
   return (
-    ORDER_TYPE_LABELS[orderType] ||
-    orderType.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
+    ORDER_TYPE_CONFIG[orderType] || {
+      label: orderType
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, (l) => l.toUpperCase()),
+      icon: <Package className="w-4 h-4" />,
+    }
   );
 };
 
@@ -67,14 +142,12 @@ const formatDate = (dateString: string): string => {
   try {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
-      year: "numeric",
       month: "short",
       day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
+      year: "numeric",
     });
-  } catch (error) {
-    return "Invalid date: " + error;
+  } catch {
+    return "Invalid date";
   }
 };
 
@@ -128,187 +201,207 @@ const OrderCard: React.FC<OrderCardProps> = memo(({ order }) => {
     [],
   );
 
+  const statusConfig = getStatusConfig(order.status);
+  const orderTypeConfig = getOrderTypeConfig(order.order_type);
   const boxText = order.box_count === 1 ? "box" : "boxes";
 
   return (
     <>
       <article
-        className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200 border border-[#DADCE0] mb-4"
-        aria-label={`${getOrderTypeLabel(order.order_type)} order`}
+        className="group bg-white rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden"
+        aria-label={`${orderTypeConfig.label} order`}
       >
-        <div className="flex flex-col md:flex-row justify-between gap-4">
-          <div className="space-y-3 flex-1">
-            {order.status === OrderStatus.PROCESSING ? (
-              <div className="space-y-2">
-                <p className="text-base text-[#333333]">
-                  We&#39;re ready to receive your boxes! Please bring them to
-                  this address:
-                </p>
-                <Link
-                  href="https://maps.app.goo.gl/ivcTDLRqFDXJV5Pt5"
-                  className="text-[#1742B1] hover:underline font-medium focus:outline-none focus:ring-2 focus:ring-[#1742B1]/20 rounded"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="View warehouse location on Google Maps"
-                >
-                  591 Central Ave, Brooklyn, NY 11207
-                </Link>
+        <div className="p-6">
+          {/* Header Section */}
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center group-hover:bg-gray-100 transition-colors">
+                {orderTypeConfig.icon}
               </div>
-            ) : (
-              <>
-                <div className="flex items-center gap-3">
-                  <h3 className="text-lg font-semibold text-[#333333]">
-                    {getOrderTypeLabel(order.order_type)}
+              <div>
+                <div className="flex items-center gap-3 mb-1">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {orderTypeConfig.label}
                   </h3>
                   <span
-                    className={`px-3 py-1 ${getStatusColor(order.status)} text-xs font-medium rounded-full uppercase`}
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full border ${statusConfig.bg} ${statusConfig.color}`}
                     role="status"
-                    aria-label={`Order status: ${order.status}`}
                   >
+                    <span>{statusConfig.icon}</span>
                     {order.status.charAt(0).toUpperCase() +
-                      order.status.slice(1)}
+                      order.status.slice(1).replace("_", " ")}
                   </span>
                 </div>
+                <p className="text-sm text-gray-500">
+                  Order #{order.id.split("-").slice(-1)[0].toUpperCase()}
+                </p>
+              </div>
+            </div>
 
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Package
-                      className="w-4 h-4"
-                      strokeWidth={1.5}
-                      aria-hidden="true"
-                    />
-                    <span>
-                      {order.box_count} {boxText}
-                    </span>
-                  </div>
+            {isCancellable ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100 focus:opacity-100"
+                    aria-label="Order actions menu"
+                  >
+                    <MoreVertical className="w-5 h-5" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem
+                    onClick={() => setShowCancelModal(true)}
+                    className="text-red-600 focus:text-red-700"
+                  >
+                    Cancel Order
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : null}
+          </div>
 
-                  {order.scheduled_date && (
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Calendar
-                        className="w-4 h-4"
-                        strokeWidth={1.5}
-                        aria-hidden="true"
-                      />
-                      <span>
-                        Scheduled:{" "}
-                        <time dateTime={order.scheduled_date}>
-                          {formatDate(order.scheduled_date)}
-                        </time>
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Clock
-                      className="w-4 h-4"
-                      strokeWidth={1.5}
-                      aria-hidden="true"
-                    />
-                    <span>
-                      Created:{" "}
-                      <time dateTime={order.created_at}>
-                        {formatDate(order.created_at)}
-                      </time>
-                    </span>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {order.photo_urls.length > 0 && (
-              <div className="pt-2">
-                <div
-                  className="flex gap-2 overflow-x-auto"
-                  role="list"
-                  aria-label="Box photos"
-                >
-                  {order.photo_urls.slice(0, 3).map((url, index) => (
-                    <div
-                      key={`${order.id}-photo-${index}`}
-                      className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded-md overflow-hidden border border-[#DADCE0]"
-                      role="listitem"
-                    >
-                      <Image
-                        src={url}
-                        alt={`Box ${index + 1}`}
-                        width={64}
-                        height={64}
-                        className="object-cover w-full h-full"
-                        loading="lazy"
-                      />
-                    </div>
-                  ))}
-                  {order.photo_urls.length > 3 && (
-                    <div
-                      className="flex-shrink-0 w-16 h-16 bg-[#F5F7FA] rounded-md flex items-center justify-center border border-[#DADCE0] border-dashed"
-                      role="listitem"
-                      aria-label={`${order.photo_urls.length - 3} more photos`}
-                    >
-                      <span className="text-xs text-gray-600">
-                        +{order.photo_urls.length - 3}
-                      </span>
-                    </div>
-                  )}
+          {/* Processing State - Special Layout */}
+          {order.status === OrderStatus.PROCESSING ? (
+            <div className="bg-blue-50 rounded-lg p-4 mb-4">
+              <div className="flex items-start gap-3">
+                <MapPin className="w-5 h-5 text-blue-600 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900 mb-1">
+                    Ready for drop-off at our warehouse
+                  </p>
+                  <Link
+                    href="https://maps.app.goo.gl/ivcTDLRqFDXJV5Pt5"
+                    className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium group"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    591 Central Ave, Brooklyn, NY 11207
+                    <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                  </Link>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          ) : (
+            /* Normal State - Details Grid */
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+              <div className="flex items-center gap-3">
+                <Package className="w-4 h-4 text-gray-400" />
+                <div>
+                  <p className="text-xs text-gray-500">Items</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {order.box_count} {boxText}
+                  </p>
+                </div>
+              </div>
 
-          <div className="flex items-start">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  className="p-2 hover:bg-[#F5F7FA] rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-[#1742B1]"
-                  aria-label="Order actions menu"
-                  aria-haspopup="true"
-                >
-                  <MoreHorizontal
-                    className="w-5 h-5 text-[#333333]"
-                    aria-hidden="true"
-                  />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={() => setShowCancelModal(true)}
-                  className="text-red-600 focus:text-red-700"
-                  disabled={!isCancellable}
-                >
-                  Cancel Order
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+              {order.scheduled_date && (
+                <div className="flex items-center gap-3">
+                  <Calendar className="w-4 h-4 text-gray-400" />
+                  <div>
+                    <p className="text-xs text-gray-500">Scheduled</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {formatDate(order.scheduled_date)}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center gap-3">
+                <Clock className="w-4 h-4 text-gray-400" />
+                <div>
+                  <p className="text-xs text-gray-500">Created</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {formatDate(order.created_at)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Photos Section */}
+          {order.photo_urls.length > 0 && (
+            <div className="flex items-center gap-2">
+              <div className="flex -space-x-2">
+                {order.photo_urls.slice(0, 4).map((url, index) => (
+                  <div
+                    key={`${order.id}-photo-${index}`}
+                    className="relative w-10 h-10 rounded-lg overflow-hidden border-2 border-white shadow-sm"
+                    style={{ zIndex: order.photo_urls.length - index }}
+                  >
+                    <Image
+                      src={url}
+                      alt={`Box ${index + 1}`}
+                      width={40}
+                      height={40}
+                      className="object-cover w-full h-full"
+                      loading="lazy"
+                    />
+                  </div>
+                ))}
+                {order.photo_urls.length > 4 && (
+                  <div
+                    className="relative w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-white shadow-sm"
+                    style={{ zIndex: 0 }}
+                  >
+                    <span className="text-xs font-medium text-gray-600">
+                      +{order.photo_urls.length - 4}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <span className="text-xs text-gray-500 ml-2">
+                {order.photo_urls.length} photo
+                {order.photo_urls.length !== 1 ? "s" : ""} uploaded
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Action Footer */}
+        <div className="px-6 py-3 bg-gray-50 border-t border-gray-100">
+          <div className="flex items-center justify-between h-4"></div>
         </div>
       </article>
 
+      {/* Cancel Modal */}
       <Dialog open={showCancelModal} onOpenChange={handleCloseModal}>
-        <DialogContent
-          className="sm:max-w-md"
-          aria-describedby="cancel-dialog-description"
-        >
+        <DialogContent className="sm:max-w-md">
+          <button
+            onClick={handleCloseModal}
+            className="absolute right-4 top-4 p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all"
+            aria-label="Close dialog"
+          >
+            <X className="w-4 h-4" />
+          </button>
+
           <DialogHeader>
             <DialogTitle>Cancel Order</DialogTitle>
-            <DialogDescription id="cancel-dialog-description">
-              Are you sure you want to cancel this order? This action cannot be
-              undone.
+            <DialogDescription>
+              This action cannot be undone. The order will be permanently
+              cancelled.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
-            <div className="p-4 bg-[#F5F7FA] rounded-lg">
-              <dl className="text-sm space-y-1">
-                <div>
-                  <dt className="inline font-medium">Box Count:</dt>
-                  <dd className="inline ml-1">{order.box_count}</dd>
+          <div className="space-y-4 py-4">
+            <div className="bg-gray-50 rounded-lg p-4">
+              <dl className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <dt className="text-gray-500">Order ID</dt>
+                  <dd className="font-medium text-gray-900">
+                    #{order.id.split("-").slice(-1)[0].toUpperCase()}
+                  </dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-gray-500">Items</dt>
+                  <dd className="font-medium text-gray-900">
+                    {order.box_count} {boxText}
+                  </dd>
                 </div>
                 {order.scheduled_date && (
-                  <div>
-                    <dt className="inline font-medium">Scheduled Date:</dt>
-                    <dd className="inline ml-1">
-                      <time dateTime={order.scheduled_date}>
-                        {formatDate(order.scheduled_date)}
-                      </time>
+                  <div className="flex justify-between">
+                    <dt className="text-gray-500">Scheduled</dt>
+                    <dd className="font-medium text-gray-900">
+                      {formatDate(order.scheduled_date)}
                     </dd>
                   </div>
                 )}
@@ -316,11 +409,11 @@ const OrderCard: React.FC<OrderCardProps> = memo(({ order }) => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="cancel-reason">
-                Reason for cancellation{" "}
-                <span className="text-red-500" aria-label="required">
-                  *
-                </span>
+              <Label
+                htmlFor="cancel-reason"
+                className="text-sm font-medium text-gray-700"
+              >
+                Reason for cancellation <span className="text-red-500">*</span>
               </Label>
               <Textarea
                 id="cancel-reason"
@@ -328,26 +421,24 @@ const OrderCard: React.FC<OrderCardProps> = memo(({ order }) => {
                 value={cancelReason}
                 onChange={handleCancelReasonChange}
                 rows={3}
-                className="resize-none"
-                aria-required="true"
-                aria-invalid={!cancelReason.trim() && isSubmitting}
+                className="resize-none w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
                 disabled={isSubmitting}
               />
             </div>
           </div>
 
-          <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
+          <DialogFooter className="flex-col-reverse sm:flex-row gap-3">
             <button
               onClick={handleCloseModal}
               disabled={isSubmitting}
-              className="px-5 py-2 bg-transparent border border-[#1742B1] text-[#1742B1] rounded-md text-sm font-medium hover:bg-[#F5F7FA] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#1742B1]"
+              className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               Keep Order
             </button>
             <button
               onClick={handleCancelOrder}
               disabled={isSubmitting || !cancelReason.trim()}
-              className="px-5 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-red-600"
+              className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {isSubmitting ? "Canceling..." : "Cancel Order"}
             </button>

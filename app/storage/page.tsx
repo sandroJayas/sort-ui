@@ -2,10 +2,10 @@
 
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { toast } from "sonner";
-import { Package } from "lucide-react";
+import { Package, AlertCircle, Search } from "lucide-react";
 import { DashboardNavbar } from "@/components/shared/Navbar";
 import Header from "@/components/orders/Header";
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { VerificationAlert } from "@/components/shared/VerificationAlert";
 import Container from "@/components/shared/Container";
 import OrderCard from "@/components/orders/OrderCard";
@@ -17,17 +17,27 @@ import { OrderStatus } from "@/types/order";
 import type { OrderListResponse } from "@/components/orders/OrderCard";
 
 interface EmptyStateProps {
-  onCreateOrder?: () => void;
+  hasFilter?: boolean;
 }
 
-const EmptyState: React.FC<EmptyStateProps> = ({ onCreateOrder }) => (
-  <div className="bg-white rounded-lg p-12 text-center border border-[#DADCE0]">
-    <div className="w-16 h-16 bg-[#F5F7FA] rounded-full flex items-center justify-center mx-auto mb-4">
-      <Package className="w-8 h-8 text-[#333333]" aria-hidden="true" />
+const EmptyState: React.FC<EmptyStateProps> = ({ hasFilter = false }) => (
+  <div className="flex flex-col items-center justify-center py-16">
+    <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+      {hasFilter ? (
+        <Search className="w-10 h-10 text-gray-400" />
+      ) : (
+        <Package className="w-10 h-10 text-gray-400" />
+      )}
     </div>
-    <h2 className="text-lg font-medium text-gray-700 mb-2">No active orders</h2>
-    <p className="text-gray-500 mb-6">Create your first order to get started</p>
-    <OrderWizard />
+    <h3 className="text-lg font-medium text-gray-900 mb-2">
+      {hasFilter ? "No orders found" : "No active orders"}
+    </h3>
+    <p className="text-sm text-gray-500 mb-6 text-center max-w-sm">
+      {hasFilter
+        ? "Try adjusting your filters or search terms to find what you're looking for."
+        : "Get started by creating your first storage order. It only takes a few minutes!"}
+    </p>
+    {!hasFilter && <OrderWizard />}
   </div>
 );
 
@@ -37,24 +47,30 @@ interface ErrorStateProps {
 }
 
 const ErrorState: React.FC<ErrorStateProps> = ({ error, onRetry }) => (
-  <div className="bg-white rounded-lg p-12 text-center border border-red-200">
-    <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-      <Package className="w-8 h-8 text-red-600" aria-hidden="true" />
+  <div className="flex flex-col items-center justify-center py-16">
+    <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-4">
+      <AlertCircle className="w-10 h-10 text-red-500" />
     </div>
-    <h2 className="text-lg font-medium text-gray-700 mb-2">
-      Error loading orders
-    </h2>
-    <p className="text-gray-500 mb-6">
-      {error.message || "Something went wrong"}
+    <h3 className="text-lg font-medium text-gray-900 mb-2">
+      Something went wrong
+    </h3>
+    <p className="text-sm text-gray-500 mb-6 text-center max-w-sm">
+      {error.message || "We couldn't load your orders. Please try again."}
     </p>
     {onRetry && (
       <button
         onClick={onRetry}
-        className="bg-[#1742B1] text-white px-6 py-2.5 rounded-md font-semibold text-sm uppercase tracking-wider hover:bg-[#14399F] hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#1742B1] focus:ring-offset-2"
+        className="inline-flex items-center gap-2 px-4 py-2 bg-[#1742B1] text-white rounded-lg font-medium text-sm hover:bg-[#14399F] hover:shadow-lg hover:shadow-[#1742B1]/25 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#1742B1]/20"
       >
         Try Again
       </button>
     )}
+  </div>
+);
+
+const LoadingState: React.FC = () => (
+  <div className="flex items-center justify-center py-16">
+    <LoadingSpinner size="lg" text="Loading your orders..." />
   </div>
 );
 
@@ -105,15 +121,27 @@ export default function BoxesPage() {
         break;
       case "2025":
         filterDate.setFullYear(2025, 0, 1);
-        break;
+        const endOf2025 = new Date(2025, 11, 31, 23, 59, 59);
+        filtered = filtered.filter((order) => {
+          const orderDate = new Date(order.created_at);
+          return orderDate >= filterDate && orderDate <= endOf2025;
+        });
+        return filtered;
       case "2024":
         filterDate.setFullYear(2024, 0, 1);
-        break;
+        const endOf2024 = new Date(2024, 11, 31, 23, 59, 59);
+        filtered = filtered.filter((order) => {
+          const orderDate = new Date(order.created_at);
+          return orderDate >= filterDate && orderDate <= endOf2024;
+        });
+        return filtered;
     }
 
-    filtered = filtered.filter(
-      (order) => new Date(order.created_at) >= filterDate,
-    );
+    if (timeFilter === "30days" || timeFilter === "3months") {
+      filtered = filtered.filter(
+        (order) => new Date(order.created_at) >= filterDate,
+      );
+    }
 
     return filtered;
   }, [ordersData?.orders, nameFilter, timeFilter]);
@@ -123,30 +151,20 @@ export default function BoxesPage() {
   }, [refetch]);
 
   const isVerified = isUserValid(user);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#F5F7FA]">
-        <DashboardNavbar />
-        <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-          <LoadingSpinner />
-        </div>
-      </div>
-    );
-  }
+  const hasActiveFilter = !!nameFilter || timeFilter !== "3months";
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA]">
+    <div className="min-h-screen bg-gray-50">
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-[#1742B1] text-white px-4 py-2 rounded"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-[#1742B1] text-white px-4 py-2 rounded-lg z-50"
       >
         Skip to main content
       </a>
 
       <DashboardNavbar />
 
-      {!isVerified && <VerificationAlert />}
+      {!isVerified && user ? <VerificationAlert /> : null}
 
       <main id="main-content" role="main">
         <Container>
@@ -157,22 +175,40 @@ export default function BoxesPage() {
           />
         </Container>
 
-        <Container>
-          <section aria-label="Orders list">
-            {error ? (
-              <ErrorState error={error} onRetry={handleRetry} />
-            ) : activeOrders.length > 0 ? (
-              <div className="space-y-4" role="list">
-                {activeOrders.map((order) => (
-                  <div key={order.id} role="listitem">
-                    <OrderCard order={order} />
-                  </div>
-                ))}
+        <Container className="py-0">
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
+            {/* Orders Header */}
+            <div className="px-6 py-4 border-b border-gray-100">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-semibold text-gray-900">
+                  Active Orders
+                </h2>
+                {activeOrders.length > 0 && (
+                  <span className="text-sm text-gray-500">
+                    {activeOrders.length}{" "}
+                    {activeOrders.length === 1 ? "order" : "orders"}
+                  </span>
+                )}
               </div>
-            ) : (
-              <EmptyState />
-            )}
-          </section>
+            </div>
+
+            {/* Orders Content */}
+            <div className="p-6">
+              {isLoading ? (
+                <LoadingState />
+              ) : error ? (
+                <ErrorState error={error} onRetry={handleRetry} />
+              ) : activeOrders.length > 0 ? (
+                <div className="space-y-4">
+                  {activeOrders.map((order) => (
+                    <OrderCard key={order.id} order={order} />
+                  ))}
+                </div>
+              ) : (
+                <EmptyState hasFilter={hasActiveFilter} />
+              )}
+            </div>
+          </div>
         </Container>
       </main>
     </div>
