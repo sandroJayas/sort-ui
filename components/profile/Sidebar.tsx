@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { useUser } from "@/hooks/useUser";
 import { toast } from "sonner";
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { useSession } from "next-auth/react";
 
 const Sidebar = (props: { tab: string }) => {

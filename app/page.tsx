@@ -189,7 +189,7 @@ export default function Home() {
             <Logo />
             <SortButton
               className="px-6 py-2"
-              onClick={() => signIn("auth0", { callbackUrl: "/dashboard" })}
+              onClick={() => signIn("auth0", { callbackUrl: "/storage" })}
             >
               Sign In
             </SortButton>

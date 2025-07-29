@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import React, { useEffect } from "react";
 import { useUser } from "@/hooks/useUser";
 import { toast } from "sonner";
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";

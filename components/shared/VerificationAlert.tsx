@@ -1,33 +1,56 @@
 "use client";
 
-import { AlertCircle } from "lucide-react";
-import { Alert, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import React, { memo, useState } from "react";
+import { AlertCircle, X, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
-export function VerificationAlert() {
+export const VerificationAlert: React.FC = memo(() => {
+  const [isVisible, setIsVisible] = useState(true);
+
+  if (!isVisible) return null;
+
   return (
-    <Alert className="flex items-center justify-between bg-red-100 border-0 rounded-none">
-      <div className="flex flex-col md:flex-row container mx-auto px-4 max-w-6xl justify-between items-start md:items-center gap-4">
-        <div className="flex items-start gap-2 flex-1 break-words">
-          <AlertCircle className="text-red-600 shrink-0" />
-          <AlertTitle className="tracking-wide break-words overflow-visible">
-            To access Sort&#39;s full features, please complete your profile
-            details first.
-          </AlertTitle>
-        </div>
-        <Link
-          href="/profile/personal-information"
-          className={"w-full md:w-auto mt-2 md:mt-0"}
-        >
-          <Button
-            size="lg"
-            className="text-destructive-foreground hover:bg-destructive/60 bg-red-600 text-white w-full md:w-auto"
+    <div
+      className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border-b border-orange-100"
+      role="alert"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between gap-4 py-3">
+          <div className="flex items-center gap-3 flex-1">
+            <div className="flex-shrink-0">
+              <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                <AlertCircle
+                  className="w-4 h-4 text-orange-600"
+                  strokeWidth={2}
+                />
+              </div>
+            </div>
+            <div className="flex-1 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+              <p className="text-sm font-medium text-gray-900">
+                Complete your profile to unlock all features
+              </p>
+              <Link
+                href="/profile/personal-information"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-orange-600 hover:text-orange-700 transition-colors group"
+              >
+                Update profile
+                <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            </div>
+          </div>
+          <button
+            onClick={() => setIsVisible(false)}
+            className="flex-shrink-0 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-white/50 rounded-md transition-all duration-200"
+            aria-label="Dismiss alert"
           >
-            Update profile
-          </Button>
-        </Link>
+            <X className="w-4 h-4" />
+          </button>
+        </div>
       </div>
-    </Alert>
+    </div>
   );
-}
+});
+
+VerificationAlert.displayName = "VerificationAlert";
