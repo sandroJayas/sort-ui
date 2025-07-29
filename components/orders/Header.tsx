@@ -1,13 +1,5 @@
 import React from "react";
 import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import OrderWizard from "@/components/orders/OrderWizard";
 
 const Header = ({
@@ -20,52 +12,55 @@ const Header = ({
   setNameFilter: (name: string | null) => void;
 }) => {
   return (
-    <>
-      <div className="grid md:flex md:justify-between md:items-center gap-4 mb-6">
-        <h1 className="text-2xl font-semibold">My Storage</h1>
+    <div className="space-y-6">
+      {/* Title and Search Row */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <h1 className="text-2xl md:text-3xl font-bold text-[#333333] leading-tight">
+          My Storage
+        </h1>
 
-        <div className="flex w-full md:w-auto gap-2">
-          <div className="relative flex-grow">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              className="pl-10 pr-4 py-2 w-full md:w-80 border-gray-300 h-10 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-              placeholder="Search all boxes"
-              //TODO detect stop typing
-              onChange={(event) => {
-                setNameFilter(
-                  event.target.value === "" ? null : event.target.value,
-                );
-              }}
-            />
-          </div>
+        <div className="relative w-full md:w-96">
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-[#333333] opacity-40 w-5 h-5"
+            strokeWidth={1.5}
+          />
+          <input
+            type="text"
+            placeholder="Search all boxes"
+            className="w-full bg-white border border-[#DADCE0] rounded-md pl-10 pr-4 py-2.5 text-base text-[#333333] placeholder-gray-400 focus:border-[#1742B1] focus:ring focus:ring-[#1742B1]/20 transition-all duration-200"
+            onChange={(event) => {
+              setNameFilter(
+                event.target.value === "" ? null : event.target.value,
+              );
+            }}
+          />
         </div>
       </div>
-      <div className="grid md:flex md:justify-between md:items-center gap-4 mb-4">
-        <div className={"flex items-center gap-4 mb-4"}>
-          <div className="text-sm font-medium">
-            <span className="font-bold">{boxes} box</span> created in
-          </div>
 
-          <Select
+      {/* Filter Row */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-[#333333]">
+            <span className="font-semibold">
+              {boxes} box{boxes !== 1 ? "es" : ""}
+            </span>{" "}
+            created in
+          </span>
+          <select
+            className="bg-white border border-[#DADCE0] rounded-md px-4 py-2 text-sm text-[#333333] focus:border-[#1742B1] focus:ring focus:ring-[#1742B1]/20 transition-all duration-200"
             defaultValue="3months"
-            onValueChange={(value) => {
-              setTimeFilter(value);
-            }}
+            onChange={(e) => setTimeFilter(e.target.value)}
           >
-            <SelectTrigger className="w-[160px] h-9 text-sm border-gray-300 dark:border-gray-600">
-              <SelectValue placeholder="Time" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="30days">last 30 days</SelectItem>
-              <SelectItem value="3months">past 3 months</SelectItem>
-              <SelectItem value="2025">2025</SelectItem>
-              <SelectItem value="2024">2024</SelectItem>
-            </SelectContent>
-          </Select>
+            <option value="30days">last 30 days</option>
+            <option value="3months">past 3 months</option>
+            <option value="2025">2025</option>
+            <option value="2024">2024</option>
+          </select>
         </div>
+
         <OrderWizard />
       </div>
-    </>
+    </div>
   );
 };
 
