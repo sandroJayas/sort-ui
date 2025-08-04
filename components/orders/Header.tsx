@@ -4,6 +4,7 @@ import OrderWizard from "@/components/orders/OrderWizard";
 
 interface HeaderProps {
   boxes: number;
+  orders: number;
   setTimeFilter: (timeFilter: string) => void;
   setNameFilter: (name: string | null) => void;
 }
@@ -16,7 +17,7 @@ const TIME_FILTERS = [
 ] as const;
 
 const Header: React.FC<HeaderProps> = memo(
-  ({ boxes, setTimeFilter, setNameFilter }) => {
+  ({ boxes, orders, setTimeFilter, setNameFilter }) => {
     const searchInputRef = useRef<HTMLInputElement>(null);
     const searchTimeoutRef = useRef<NodeJS.Timeout>(null);
 
@@ -81,7 +82,7 @@ const Header: React.FC<HeaderProps> = memo(
                   Active Orders
                 </p>
                 <p className="mt-1 text-2xl font-semibold text-gray-900">
-                  {boxes}
+                  {orders}
                 </p>
               </div>
               <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
@@ -109,7 +110,7 @@ const Header: React.FC<HeaderProps> = memo(
                   Total Storage
                 </p>
                 <p className="mt-1 text-2xl font-semibold text-gray-900">
-                  24 {boxText}
+                  {boxes + " " + boxText}
                 </p>
               </div>
               <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
