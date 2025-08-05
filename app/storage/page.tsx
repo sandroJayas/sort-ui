@@ -214,53 +214,43 @@ export default function StoragePage() {
 
         <Container className="py-0 space-y-6">
           {/* Active Orders Section */}
-          {boxesLoading ||
-          (boxesData &&
-            boxesData.boxes.filter(
-              (box) =>
-                box.status === BoxStatus.STORED ||
-                box.status === BoxStatus.IN_TRANSIT ||
-                box.status === BoxStatus.RETURNED,
-            ).length > 0) ? null : (
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
-              {/* Orders Header */}
-              <div className="px-6 py-4 border-b border-gray-100">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-base font-semibold text-gray-900">
-                    Active Orders
-                  </h2>
-                  {activeOrders.length > 0 && (
-                    <span className="text-sm text-gray-500">
-                      {activeOrders.length}{" "}
-                      {activeOrders.length === 1 ? "order" : "orders"}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Orders Content */}
-              <div className="p-6">
-                {ordersLoading ? (
-                  <LoadingState text="Loading your orders..." />
-                ) : ordersError ? (
-                  <ErrorState
-                    error={ordersError}
-                    onRetry={handleRetryOrders}
-                    type="orders"
-                  />
-                ) : activeOrders.length > 0 ? (
-                  <div className="space-y-4">
-                    {activeOrders.map((order) => (
-                      <OrderCard key={order.id} order={order} />
-                    ))}
-                  </div>
-                ) : (
-                  <EmptyState hasFilter={hasActiveFilter} type="orders" />
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
+            {/* Orders Header */}
+            <div className="px-6 py-4 border-b border-gray-100">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-semibold text-gray-900">
+                  Active Orders
+                </h2>
+                {activeOrders.length > 0 && (
+                  <span className="text-sm text-gray-500">
+                    {activeOrders.length}{" "}
+                    {activeOrders.length === 1 ? "order" : "orders"}
+                  </span>
                 )}
               </div>
             </div>
-          )}
 
+            {/* Orders Content */}
+            <div className="p-6">
+              {ordersLoading ? (
+                <LoadingState text="Loading your orders..." />
+              ) : ordersError ? (
+                <ErrorState
+                  error={ordersError}
+                  onRetry={handleRetryOrders}
+                  type="orders"
+                />
+              ) : activeOrders.length > 0 ? (
+                <div className="space-y-4">
+                  {activeOrders.map((order) => (
+                    <OrderCard key={order.id} order={order} />
+                  ))}
+                </div>
+              ) : (
+                <EmptyState hasFilter={hasActiveFilter} type="orders" />
+              )}
+            </div>
+          </div>
           {/* Stored Boxes Section */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
             {/* Boxes Header */}
