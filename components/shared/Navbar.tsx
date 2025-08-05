@@ -192,16 +192,6 @@ export const DashboardNavbar: React.FC = () => {
                     Profile Settings
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link
-                    href="/settings"
-                    className="flex items-center gap-2 cursor-pointer"
-                  >
-                    <Settings className="w-4 h-4" />
-                    Preferences
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={handleLogout}
                   className="flex items-center gap-2 text-red-600 focus:text-red-600 cursor-pointer"
