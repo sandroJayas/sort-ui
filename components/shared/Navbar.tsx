@@ -6,7 +6,6 @@ import {
   User,
   LogOut,
   UserCircle,
-  Settings,
   ChevronDown,
   Package,
 } from "lucide-react";
