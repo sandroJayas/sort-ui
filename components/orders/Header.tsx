@@ -3,8 +3,6 @@ import { Search, Calendar } from "lucide-react";
 import OrderWizard from "@/components/orders/OrderWizard";
 
 interface HeaderProps {
-  boxes: number;
-  orders: number;
   setTimeFilter: (timeFilter: string) => void;
   setNameFilter: (name: string | null) => void;
 }
@@ -17,7 +15,7 @@ const TIME_FILTERS = [
 ] as const;
 
 const Header: React.FC<HeaderProps> = memo(
-  ({ boxes, orders, setTimeFilter, setNameFilter }) => {
+  ({ setTimeFilter, setNameFilter }) => {
     const searchInputRef = useRef<HTMLInputElement>(null);
     const searchTimeoutRef = useRef<NodeJS.Timeout>(null);
 
@@ -53,8 +51,6 @@ const Header: React.FC<HeaderProps> = memo(
       [setTimeFilter],
     );
 
-    const boxText = boxes === 1 ? "box" : "boxes";
-
     return (
       <header className="space-y-6">
         {/* Title and Actions Row */}
@@ -70,91 +66,6 @@ const Header: React.FC<HeaderProps> = memo(
 
           <div className="flex flex-col sm:flex-row gap-3">
             <OrderWizard />
-          </div>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-white rounded-xl border border-gray-100 p-4 hover:shadow-sm transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">
-                  Active Orders
-                </p>
-                <p className="mt-1 text-2xl font-semibold text-gray-900">
-                  {orders}
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-blue-600"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                  />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl border border-gray-100 p-4 hover:shadow-sm transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">
-                  Total Storage
-                </p>
-                <p className="mt-1 text-2xl font-semibold text-gray-900">
-                  {boxes + " " + boxText}
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-green-600"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
-                  />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl border border-gray-100 p-4 hover:shadow-sm transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">This Month</p>
-                <p className="mt-1 text-2xl font-semibold text-gray-900">
-                  +3 new
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-purple-600"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                  />
-                </svg>
-              </div>
-            </div>
           </div>
         </div>
 

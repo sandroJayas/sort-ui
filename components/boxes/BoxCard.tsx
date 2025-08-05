@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useCallback, memo } from "react";
-import { Calendar, MoreVertical, Package, MapPin, X, Home } from "lucide-react";
+import React, { memo, useCallback, useState } from "react";
+import { Calendar, Home, MoreVertical, Package } from "lucide-react";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -22,7 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useRequestBoxReturn } from "@/hooks/box/useRequestBoxReturn";
 import { useUser } from "@/hooks/useUser";
-import type { BoxListResponse } from "@/types/box";
+import { BoxListResponse, BoxStatus } from "@/types/box";
 import type { Address } from "@/types/order";
 
 interface BoxCardProps {
@@ -41,6 +41,19 @@ const formatDate = (dateString: string): string => {
     return "Invalid date";
   }
 };
+
+function getStatusMessage(status: BoxStatus): string {
+  switch (status) {
+    case BoxStatus.STORED:
+      return "Stored Safely";
+    case BoxStatus.IN_TRANSIT:
+      return "In Transit";
+    case BoxStatus.RETURNED:
+      return "Box returned";
+    default:
+      return "Unknown Status";
+  }
+}
 
 const BoxCard: React.FC<BoxCardProps> = memo(({ box }) => {
   const [showReturnModal, setShowReturnModal] = useState(false);
@@ -156,17 +169,7 @@ const BoxCard: React.FC<BoxCardProps> = memo(({ box }) => {
           </div>
 
           {/* Details Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-            <div className="flex items-center gap-3">
-              <MapPin className="w-4 h-4 text-gray-400" />
-              <div>
-                <p className="text-xs text-gray-500">Location</p>
-                <p className="text-sm font-medium text-gray-900">
-                  {box.location || "Warehouse A"}
-                </p>
-              </div>
-            </div>
-
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-8">
             <div className="flex items-center gap-3">
               <Calendar className="w-4 h-4 text-gray-400" />
               <div>
@@ -180,37 +183,37 @@ const BoxCard: React.FC<BoxCardProps> = memo(({ box }) => {
 
           {/* Status Badge */}
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full border bg-green-50 border-green-200 text-green-700">
-              <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-              Stored Safely
-            </span>
+            {box.status === BoxStatus.IN_TRANSIT ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full border bg-yellow-50 border-yellow-200 text-yellow-700">
+                <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full"></span>
+                {getStatusMessage(box.status)}
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full border bg-green-50 border-green-200 text-green-700">
+                <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                {getStatusMessage(box.status)}
+              </span>
+            )}
           </div>
         </div>
 
         {/* Action Footer */}
-        <div className="px-6 py-3 bg-gray-50 border-t border-gray-100">
-          <button
-            onClick={() => setShowReturnModal(true)}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
-          >
-            <Home className="w-4 h-4" />
-            Request Return
-          </button>
-        </div>
+        {box.status === BoxStatus.IN_TRANSIT ? null : (
+          <div className="px-6 py-3 bg-gray-50 border-t border-gray-100">
+            <button
+              onClick={() => setShowReturnModal(true)}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
+            >
+              <Home className="w-4 h-4" />
+              Request Return
+            </button>
+          </div>
+        )}
       </article>
 
       {/* Return Request Modal */}
       <Dialog open={showReturnModal} onOpenChange={handleCloseModal}>
         <DialogContent className="sm:max-w-lg">
-          <button
-            onClick={handleCloseModal}
-            className="absolute right-4 top-4 p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all"
-            aria-label="Close dialog"
-            disabled={isSubmitting}
-          >
-            <X className="w-4 h-4" />
-          </button>
-
           <DialogHeader>
             <DialogTitle>Request Box Return</DialogTitle>
             <DialogDescription>
@@ -232,12 +235,6 @@ const BoxCard: React.FC<BoxCardProps> = memo(({ box }) => {
                     #{box.id.split("-").slice(-1)[0].toUpperCase()}
                   </dd>
                 </div>
-                <div className="flex justify-between">
-                  <dt className="text-gray-500">Current Location</dt>
-                  <dd className="font-medium text-gray-900">
-                    {box.location || "Warehouse A"}
-                  </dd>
-                </div>
               </dl>
             </div>
 
@@ -257,6 +254,7 @@ const BoxCard: React.FC<BoxCardProps> = memo(({ box }) => {
                   className="mt-1"
                   disabled={isSubmitting}
                   required
+                  readOnly={true}
                 />
               </div>
 
@@ -276,6 +274,7 @@ const BoxCard: React.FC<BoxCardProps> = memo(({ box }) => {
                     className="mt-1"
                     disabled={isSubmitting}
                     required
+                    readOnly={true}
                   />
                 </div>
                 <div>
@@ -293,6 +292,7 @@ const BoxCard: React.FC<BoxCardProps> = memo(({ box }) => {
                     className="mt-1"
                     disabled={isSubmitting}
                     required
+                    readOnly={true}
                   />
                 </div>
               </div>

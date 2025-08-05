@@ -194,10 +194,6 @@ export default function StoragePage() {
   const isVerified = isUserValid(user);
   const hasActiveFilter = !!nameFilter || timeFilter !== "3months";
 
-  // Calculate total boxes for header
-  const totalBoxes = boxesData?.boxes?.length || 0;
-  const totalOrders = activeOrders?.length || 0;
-
   return (
     <div className="min-h-screen bg-gray-50">
       <a
@@ -213,53 +209,57 @@ export default function StoragePage() {
 
       <main id="main-content" role="main">
         <Container>
-          <Header
-            orders={totalOrders}
-            boxes={totalBoxes}
-            setTimeFilter={setTimeFilter}
-            setNameFilter={setNameFilter}
-          />
+          <Header setTimeFilter={setTimeFilter} setNameFilter={setNameFilter} />
         </Container>
 
         <Container className="py-0 space-y-6">
           {/* Active Orders Section */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
-            {/* Orders Header */}
-            <div className="px-6 py-4 border-b border-gray-100">
-              <div className="flex items-center justify-between">
-                <h2 className="text-base font-semibold text-gray-900">
-                  Active Orders
-                </h2>
-                {activeOrders.length > 0 && (
-                  <span className="text-sm text-gray-500">
-                    {activeOrders.length}{" "}
-                    {activeOrders.length === 1 ? "order" : "orders"}
-                  </span>
+          {boxesLoading ||
+          (boxesData &&
+            boxesData.boxes.filter(
+              (box) =>
+                box.status === BoxStatus.STORED ||
+                box.status === BoxStatus.IN_TRANSIT ||
+                box.status === BoxStatus.RETURNED,
+            ).length > 0) ? null : (
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
+              {/* Orders Header */}
+              <div className="px-6 py-4 border-b border-gray-100">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-base font-semibold text-gray-900">
+                    Active Orders
+                  </h2>
+                  {activeOrders.length > 0 && (
+                    <span className="text-sm text-gray-500">
+                      {activeOrders.length}{" "}
+                      {activeOrders.length === 1 ? "order" : "orders"}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Orders Content */}
+              <div className="p-6">
+                {ordersLoading ? (
+                  <LoadingState text="Loading your orders..." />
+                ) : ordersError ? (
+                  <ErrorState
+                    error={ordersError}
+                    onRetry={handleRetryOrders}
+                    type="orders"
+                  />
+                ) : activeOrders.length > 0 ? (
+                  <div className="space-y-4">
+                    {activeOrders.map((order) => (
+                      <OrderCard key={order.id} order={order} />
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyState hasFilter={hasActiveFilter} type="orders" />
                 )}
               </div>
             </div>
-
-            {/* Orders Content */}
-            <div className="p-6">
-              {ordersLoading ? (
-                <LoadingState text="Loading your orders..." />
-              ) : ordersError ? (
-                <ErrorState
-                  error={ordersError}
-                  onRetry={handleRetryOrders}
-                  type="orders"
-                />
-              ) : activeOrders.length > 0 ? (
-                <div className="space-y-4">
-                  {activeOrders.map((order) => (
-                    <OrderCard key={order.id} order={order} />
-                  ))}
-                </div>
-              ) : (
-                <EmptyState hasFilter={hasActiveFilter} type="orders" />
-              )}
-            </div>
-          </div>
+          )}
 
           {/* Stored Boxes Section */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
@@ -274,8 +274,17 @@ export default function StoragePage() {
                 </div>
                 {boxesData?.boxes && boxesData.boxes.length > 0 && (
                   <span className="text-sm text-gray-500">
-                    {boxesData.boxes.length}{" "}
-                    {boxesData.boxes.length === 1 ? "box" : "boxes"} in storage
+                    {
+                      boxesData.boxes.filter(
+                        (box) => box.status === BoxStatus.STORED,
+                      ).length
+                    }{" "}
+                    {boxesData.boxes.filter(
+                      (box) => box.status === BoxStatus.STORED,
+                    ).length === 1
+                      ? "box"
+                      : "boxes"}{" "}
+                    in storage
                   </span>
                 )}
               </div>
@@ -292,11 +301,20 @@ export default function StoragePage() {
                   type="boxes"
                 />
               ) : boxesData?.boxes &&
-                boxesData.boxes.filter((box) => box.status === BoxStatus.STORED)
-                  .length > 0 ? (
+                boxesData.boxes.filter(
+                  (box) =>
+                    box.status === BoxStatus.STORED ||
+                    box.status === BoxStatus.IN_TRANSIT ||
+                    box.status === BoxStatus.RETURNED,
+                ).length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {boxesData.boxes
-                    .filter((box) => box.status === BoxStatus.STORED)
+                    .filter(
+                      (box) =>
+                        box.status === BoxStatus.STORED ||
+                        box.status === BoxStatus.IN_TRANSIT ||
+                        box.status === BoxStatus.RETURNED,
+                    )
                     .map((box: BoxListResponse) => (
                       <BoxCard key={box.id} box={box} />
                     ))}
