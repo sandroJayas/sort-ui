@@ -122,7 +122,7 @@ const OrderWizard: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<StepNumber>(
     STEPS.SERVICE_TYPE,
   );
-  const [sessionId] = useState(() => crypto.randomUUID());
+  const [sessionId, setSessionId] = useState(() => crypto.randomUUID());
   const [orderData, setOrderData] = useState<Partial<CreateOrderRequest>>({
     order_type: OrderType.SELF_DROPOFF,
     box_count: MIN_BOX_COUNT,
@@ -158,6 +158,7 @@ const OrderWizard: React.FC = () => {
       photo_urls: [],
     });
     setSelectedSlot(null);
+    setSessionId(() => crypto.randomUUID());
   }, []);
 
   const handleOpenModal = useCallback(() => {
