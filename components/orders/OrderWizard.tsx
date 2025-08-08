@@ -1,6 +1,13 @@
 "use client";
 
-import React, { useMemo, useState, useCallback, memo } from "react";
+import React, {
+  useMemo,
+  useState,
+  useCallback,
+  memo,
+  useRef,
+  useEffect,
+} from "react";
 import {
   Dialog,
   DialogContent,
@@ -42,7 +49,9 @@ import { toast } from "sonner";
 import { PhotoUpload } from "@/components/photos/photo";
 import { isUserValid } from "@/lib/utils";
 import { useSubscription } from "@/hooks/subscription/useSubscription";
+import { User } from "@/types/user";
 
+// ============= Constants =============
 const STEPS = {
   SERVICE_TYPE: 1,
   BOX_COUNT: 2,
@@ -65,30 +74,96 @@ const STEP_TITLES: Record<StepNumber, string> = {
   5: "Review",
 };
 
-interface StepIndicatorProps {
+const WAREHOUSE_ADDRESS = {
+  name: "Sort Warehouse",
+  street: "591 Central Ave",
+  city: "Brooklyn",
+  state: "NY",
+  zip: "11207",
+};
+
+// ============= Types =============
+interface OrderWizardState {
   currentStep: StepNumber;
-  totalSteps: number;
+  orderData: Partial<CreateOrderRequest>;
+  selectedSlot: SlotResponse | null;
+  sessionId: string;
+  uploadedPhotos: string[];
 }
 
-const StepIndicator: React.FC<StepIndicatorProps> = memo(
-  ({ currentStep, totalSteps }) => {
-    return (
-      <div className="relative">
-        {/* Progress Bar Background */}
-        <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-200" />
+// ============= Helper Functions =============
+const createInitialState = (): OrderWizardState => ({
+  currentStep: STEPS.SERVICE_TYPE,
+  orderData: {
+    order_type: OrderType.SELF_DROPOFF,
+    box_count: MIN_BOX_COUNT,
+    photo_urls: [],
+    notes: "",
+  },
+  selectedSlot: null,
+  sessionId: crypto.randomUUID(),
+  uploadedPhotos: [],
+});
 
-        {/* Active Progress Bar */}
-        <div
-          className="absolute top-5 left-0 h-0.5 bg-[#1742B1] transition-all duration-300"
-          style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%` }}
-        />
+const formatDateTime = (isoString: string): { date: string; time: string } => {
+  try {
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) {
+      throw new Error("Invalid date");
+    }
+    return {
+      date: date.toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+      }),
+      time: date.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+      }),
+    };
+  } catch {
+    return { date: "Invalid date", time: "Invalid time" };
+  }
+};
 
-        {/* Steps */}
-        <div className="relative flex justify-between">
-          {Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => (
-            <div key={step} className="flex flex-col items-center">
-              <div
-                className={`
+const buildAddress = (user: User): CreateOrderRequest["address"] | null => {
+  if (!user) return null;
+
+  const street = [user.address_line_1, user.address_line_2]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+
+  if (!street || !user.postal_code || !user.city || !user.country) {
+    return null;
+  }
+
+  return {
+    street,
+    zip_code: user.postal_code,
+    city: user.city,
+    country: user.country,
+  };
+};
+
+// ============= Sub-components =============
+const StepIndicator: React.FC<{
+  currentStep: StepNumber;
+  totalSteps: number;
+}> = memo(({ currentStep, totalSteps }) => {
+  return (
+    <div className="relative">
+      <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-200" />
+      <div
+        className="absolute top-5 left-0 h-0.5 bg-[#1742B1] transition-all duration-300"
+        style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%` }}
+      />
+      <div className="relative flex justify-between">
+        {Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => (
+          <div key={step} className="flex flex-col items-center">
+            <div
+              className={`
                 w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300
                 ${
                   step < currentStep
@@ -98,46 +173,56 @@ const StepIndicator: React.FC<StepIndicatorProps> = memo(
                       : "bg-white border-2 border-gray-200 text-gray-400"
                 }
               `}
-              >
-                {step < currentStep ? <Check className="w-5 h-5" /> : step}
-              </div>
-              <span
-                className={`
+            >
+              {step < currentStep ? <Check className="w-5 h-5" /> : step}
+            </div>
+            <span
+              className={`
               mt-2 text-xs font-medium transition-colors
               ${step <= currentStep ? "text-gray-900" : "text-gray-400"}
             `}
-              >
-                {STEP_TITLES[step as StepNumber]}
-              </span>
-            </div>
-          ))}
-        </div>
+            >
+              {STEP_TITLES[step as StepNumber]}
+            </span>
+          </div>
+        ))}
       </div>
-    );
-  },
-);
+    </div>
+  );
+});
 
 StepIndicator.displayName = "StepIndicator";
 
+// ============= Main Component =============
 const OrderWizard: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentStep, setCurrentStep] = useState<StepNumber>(
-    STEPS.SERVICE_TYPE,
-  );
-  const [sessionId, setSessionId] = useState(() => crypto.randomUUID());
-  const [orderData, setOrderData] = useState<Partial<CreateOrderRequest>>({
-    order_type: OrderType.SELF_DROPOFF,
-    box_count: MIN_BOX_COUNT,
-    photo_urls: [],
-  });
-  const [selectedSlot, setSelectedSlot] = useState<SlotResponse | null>(null);
+  const [state, setState] = useState<OrderWizardState>(createInitialState());
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  const { data: user, isLoading: isLoadingUser, error: userError } = useUser();
+  const { data: user, error: userError } = useUser();
   const { mutate: createOrder, isPending: isCreatingOrder } = useCreateOrder();
-  const { data: subscription } = useSubscription();
+  const { data: subscription, isLoading: isLoadingSubscription } =
+    useSubscription();
+
+  // Check if user can create orders
+  const canCreateOrder = useMemo(() => {
+    return (
+      isUserValid(user) &&
+      !isLoadingSubscription &&
+      subscription?.status === "active"
+    );
+  }, [user, subscription, isLoadingSubscription]);
+
+  // Date range for slots - only calculate when needed
+  const shouldLoadSlots =
+    isModalOpen && state.currentStep >= STEPS.SLOT_SELECTION;
 
   const dateRange = useMemo(() => {
+    if (!shouldLoadSlots) return null;
+
     const now = new Date();
+    now.setHours(0, 0, 0, 0); // Normalize to start of day for stable cache key
+
     const startDate = new Date(now);
     startDate.setDate(startDate.getDate() - 14);
 
@@ -148,105 +233,183 @@ const OrderWizard: React.FC = () => {
       start_date: startDate.toISOString(),
       end_date: endDate.toISOString(),
     };
+  }, [shouldLoadSlots]);
+
+  const {
+    data: availableSlots,
+    isLoading: isLoadingSlots,
+    error: slotsError,
+  } = useSlots(dateRange, shouldLoadSlots); // Only fetch when on slot selection step
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, []);
 
-  const { data: availableSlots, isLoading: isLoadingSlots } =
-    useSlots(dateRange);
-
   const resetWizard = useCallback(() => {
-    setCurrentStep(STEPS.SERVICE_TYPE);
-    setOrderData({
-      order_type: OrderType.SELF_DROPOFF,
-      box_count: MIN_BOX_COUNT,
-      photo_urls: [],
-    });
-    setSelectedSlot(null);
-    setSessionId(() => crypto.randomUUID());
+    setState(createInitialState());
   }, []);
 
   const handleOpenModal = useCallback(() => {
+    if (!canCreateOrder) {
+      if (!subscription || subscription.status !== "active") {
+        toast.error("Active subscription required", {
+          description: "Please subscribe to create storage orders.",
+        });
+      } else if (!isUserValid(user)) {
+        toast.error("Complete your profile", {
+          description: "Please complete your profile information first.",
+        });
+      }
+      return;
+    }
     setIsModalOpen(true);
     resetWizard();
-  }, [resetWizard]);
+  }, [canCreateOrder, subscription, user, resetWizard]);
 
   const handleCloseModal = useCallback(() => {
-    if (!isCreatingOrder) {
-      setIsModalOpen(false);
-      resetWizard();
-    }
-  }, [isCreatingOrder, resetWizard]);
+    if (isCreatingOrder) return;
+    setIsModalOpen(false);
+    resetWizard();
+  }, [
+    isCreatingOrder,
+    state.currentStep,
+    state.uploadedPhotos.length,
+    resetWizard,
+  ]);
+
+  const updateState = useCallback((updates: Partial<OrderWizardState>) => {
+    setState((prev) => ({ ...prev, ...updates }));
+  }, []);
 
   const nextStep = useCallback(() => {
-    if (currentStep < STEPS.SUMMARY) {
-      setCurrentStep((currentStep + 1) as StepNumber);
+    if (state.currentStep < STEPS.SUMMARY) {
+      updateState({ currentStep: (state.currentStep + 1) as StepNumber });
     }
-  }, [currentStep]);
+  }, [state.currentStep, updateState]);
 
   const prevStep = useCallback(() => {
-    if (currentStep > STEPS.SERVICE_TYPE) {
-      setCurrentStep((currentStep - 1) as StepNumber);
+    if (state.currentStep > STEPS.SERVICE_TYPE) {
+      updateState({ currentStep: (state.currentStep - 1) as StepNumber });
     }
-  }, [currentStep]);
+  }, [state.currentStep, updateState]);
 
   const updateBoxCount = useCallback((increment: boolean) => {
-    setOrderData((prev) => ({
+    setState((prev) => ({
       ...prev,
-      box_count: increment
-        ? Math.min(MAX_BOX_COUNT, (prev.box_count || MIN_BOX_COUNT) + 1)
-        : Math.max(MIN_BOX_COUNT, (prev.box_count || MIN_BOX_COUNT) - 1),
+      orderData: {
+        ...prev.orderData,
+        box_count: increment
+          ? Math.min(
+              MAX_BOX_COUNT,
+              (prev.orderData.box_count || MIN_BOX_COUNT) + 1,
+            )
+          : Math.max(
+              MIN_BOX_COUNT,
+              (prev.orderData.box_count || MIN_BOX_COUNT) - 1,
+            ),
+      },
     }));
   }, []);
 
   const handlePhotosChange = useCallback((photos: string[]) => {
-    setOrderData((prev) => ({ ...prev, photo_urls: photos }));
+    setState((prev) => ({
+      ...prev,
+      orderData: { ...prev.orderData, photo_urls: photos },
+      uploadedPhotos: photos,
+    }));
   }, []);
 
-  const formatDateTime = useCallback((isoString: string) => {
-    try {
-      const date = new Date(isoString);
-      return {
-        date: date.toLocaleDateString("en-US", {
-          weekday: "short",
-          month: "short",
-          day: "numeric",
-        }),
-        time: date.toLocaleTimeString("en-US", {
-          hour: "numeric",
-          minute: "2-digit",
-        }),
-      };
-    } catch {
-      return { date: "Invalid date", time: "Invalid time" };
+  const handleNotesChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const value = e.target.value;
+      if (value.length <= MAX_NOTES_LENGTH) {
+        setState((prev) => ({
+          ...prev,
+          orderData: { ...prev.orderData, notes: value },
+        }));
+      }
+    },
+    [],
+  );
+
+  const canProceedFromStep = useCallback(
+    (step: StepNumber): boolean => {
+      switch (step) {
+        case STEPS.SERVICE_TYPE:
+          return state.orderData.order_type !== undefined;
+        case STEPS.BOX_COUNT:
+          return (state.orderData.box_count || 0) >= MIN_BOX_COUNT;
+        case STEPS.PHOTO_UPLOAD:
+          return (state.orderData.photo_urls?.length || 0) > 0;
+        case STEPS.SLOT_SELECTION:
+          return state.selectedSlot !== null;
+        case STEPS.SUMMARY:
+          return !isCreatingOrder && canCreateOrder;
+        default:
+          return true;
+      }
+    },
+    [state, isCreatingOrder, canCreateOrder],
+  );
+
+  const validateOrderData = useCallback((): string | null => {
+    if (!user) return "User information not available";
+    if (!state.selectedSlot) return "Please select a time slot";
+    if (!state.orderData.photo_urls?.length)
+      return "Please upload at least one photo";
+    if (
+      !state.orderData.box_count ||
+      state.orderData.box_count < MIN_BOX_COUNT
+    ) {
+      return "Invalid box count";
     }
-  }, []);
+
+    const address = buildAddress(user);
+    if (!address) return "Invalid address information";
+
+    return null;
+  }, [user, state]);
 
   const handleSubmit = useCallback(() => {
-    if (!user || !selectedSlot) {
-      toast.error("Missing required information");
+    // Validate before submission
+    const validationError = validateOrderData();
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+
+    if (!user || !state.selectedSlot) return;
+
+    const address = buildAddress(user);
+    if (!address) {
+      toast.error("Invalid address information");
       return;
     }
 
     const finalOrder: CreateOrderRequest = {
-      ...orderData,
-      session_id: sessionId,
-      photo_urls: orderData.photo_urls || [],
-      slot_id: selectedSlot.id,
-      scheduled_date: selectedSlot.start_time,
-      address: {
-        street: [user.address_line_1, user.address_line_2]
-          .filter(Boolean)
-          .join(" ")
-          .trim(),
-        zip_code: user.postal_code || "",
-        city: user.city || "",
-        country: user.country || "",
-      },
-    } as CreateOrderRequest;
+      session_id: state.sessionId,
+      order_type: state.orderData.order_type || OrderType.SELF_DROPOFF,
+      box_count: state.orderData.box_count || MIN_BOX_COUNT,
+      photo_urls: state.orderData.photo_urls || [],
+      slot_id: state.selectedSlot.id,
+      scheduled_date: state.selectedSlot.start_time,
+      address,
+      notes: state.orderData.notes?.trim() || undefined,
+    };
+
+    // Create abort controller for this request
+    abortControllerRef.current = new AbortController();
 
     createOrder(finalOrder, {
       onSuccess: () => {
         toast.success("Order created successfully! 🎉");
-        handleCloseModal();
+        setIsModalOpen(false);
+        resetWizard();
       },
       onError: (error) => {
         toast.error(error?.name || "Failed to create order", {
@@ -254,45 +417,15 @@ const OrderWizard: React.FC = () => {
         });
       },
     });
-  }, [user, selectedSlot, orderData, createOrder, handleCloseModal, sessionId]);
-
-  const canProceedFromStep = useCallback(
-    (step: StepNumber): boolean => {
-      switch (step) {
-        case STEPS.SERVICE_TYPE:
-          return orderData.order_type !== undefined;
-        case STEPS.BOX_COUNT:
-          return (orderData.box_count || 0) >= MIN_BOX_COUNT;
-        case STEPS.PHOTO_UPLOAD:
-          return (orderData.photo_urls?.length || 0) > 0;
-        case STEPS.SLOT_SELECTION:
-          return selectedSlot !== null;
-        case STEPS.SUMMARY:
-          return !isCreatingOrder && !isLoadingUser && !!user;
-        default:
-          return true;
-      }
-    },
-    [orderData, selectedSlot, isCreatingOrder, isLoadingUser, user],
-  );
-
-  const handleNotesChange = useCallback(
-    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      const value = e.target.value;
-      if (value.length <= MAX_NOTES_LENGTH) {
-        setOrderData((prev) => ({ ...prev, notes: value }));
-      }
-    },
-    [],
-  );
+  }, [user, state, createOrder, resetWizard, validateOrderData]);
 
   return (
     <>
       <button
         onClick={handleOpenModal}
-        className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1742B1] text-white rounded-lg font-medium text-sm hover:bg-[#14399F] hover:shadow-lg hover:shadow-[#1742B1]/25 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#1742B1]/20 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed "
+        className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1742B1] text-white rounded-lg font-medium text-sm hover:bg-[#14399F] hover:shadow-lg hover:shadow-[#1742B1]/25 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#1742B1]/20 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
         aria-label="Create new storage order"
-        disabled={!isUserValid(user) || subscription?.status !== "active"}
+        disabled={!canCreateOrder}
       >
         <Plus className="w-4 h-4" />
         Create Order
@@ -310,24 +443,26 @@ const OrderWizard: React.FC = () => {
 
           <div className="px-6 py-6 overflow-y-auto flex-1">
             <StepIndicator
-              currentStep={currentStep}
+              currentStep={state.currentStep}
               totalSteps={Object.keys(STEPS).length}
             />
 
             <div className="mt-8">
-              {/* User error alert */}
-              {userError && (
+              {/* Error alerts */}
+              {(userError || slotsError) && (
                 <Alert variant="destructive" className="mb-6">
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    Failed to load user information. Please refresh and try
-                    again.
+                    {userError
+                      ? "Failed to load user information."
+                      : "Failed to load available time slots."}{" "}
+                    Please refresh and try again.
                   </AlertDescription>
                 </Alert>
               )}
 
               {/* Step 1: Service Type Selection */}
-              {currentStep === STEPS.SERVICE_TYPE && (
+              {state.currentStep === STEPS.SERVICE_TYPE && (
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-1">
@@ -341,14 +476,17 @@ const OrderWizard: React.FC = () => {
                   <div className="grid gap-4 mt-6">
                     <Card
                       className={`cursor-pointer transition-all duration-200 ${
-                        orderData.order_type === OrderType.SELF_DROPOFF
+                        state.orderData.order_type === OrderType.SELF_DROPOFF
                           ? "ring-2 ring-[#1742B1] bg-[#1742B1]/5 border-[#1742B1]"
                           : "hover:border-gray-300 hover:shadow-sm"
                       }`}
                       onClick={() =>
-                        setOrderData((prev) => ({
+                        setState((prev) => ({
                           ...prev,
-                          order_type: OrderType.SELF_DROPOFF,
+                          orderData: {
+                            ...prev.orderData,
+                            order_type: OrderType.SELF_DROPOFF,
+                          },
                         }))
                       }
                     >
@@ -402,7 +540,7 @@ const OrderWizard: React.FC = () => {
               )}
 
               {/* Step 2: Box Count Selection */}
-              {currentStep === STEPS.BOX_COUNT && (
+              {state.currentStep === STEPS.BOX_COUNT && (
                 <div className="space-y-6">
                   <div className="text-center">
                     <h3 className="text-lg font-semibold text-gray-900 mb-1">
@@ -415,7 +553,7 @@ const OrderWizard: React.FC = () => {
                       <button
                         onClick={() => updateBoxCount(false)}
                         disabled={
-                          (orderData.box_count || MIN_BOX_COUNT) <=
+                          (state.orderData.box_count || MIN_BOX_COUNT) <=
                           MIN_BOX_COUNT
                         }
                         className="w-12 h-12 rounded-full border-2 border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-[#1742B1]/20"
@@ -426,17 +564,17 @@ const OrderWizard: React.FC = () => {
 
                       <div className="text-center">
                         <div className="text-5xl font-bold text-gray-900">
-                          {orderData.box_count || MIN_BOX_COUNT}
+                          {state.orderData.box_count || MIN_BOX_COUNT}
                         </div>
                         <p className="text-sm text-gray-500 mt-1">
-                          {orderData.box_count === 1 ? "box" : "boxes"}
+                          {state.orderData.box_count === 1 ? "box" : "boxes"}
                         </p>
                       </div>
 
                       <button
                         onClick={() => updateBoxCount(true)}
                         disabled={
-                          (orderData.box_count || MIN_BOX_COUNT) >=
+                          (state.orderData.box_count || MIN_BOX_COUNT) >=
                           MAX_BOX_COUNT
                         }
                         className="w-12 h-12 rounded-full border-2 border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-[#1742B1]/20"
@@ -446,7 +584,7 @@ const OrderWizard: React.FC = () => {
                       </button>
                     </div>
 
-                    {orderData.box_count === MAX_BOX_COUNT && (
+                    {state.orderData.box_count === MAX_BOX_COUNT && (
                       <Alert className="max-w-sm">
                         <AlertCircle className="h-4 w-4" />
                         <AlertDescription>
@@ -473,7 +611,7 @@ const OrderWizard: React.FC = () => {
               )}
 
               {/* Step 3: Photo Upload */}
-              {currentStep === STEPS.PHOTO_UPLOAD && (
+              {state.currentStep === STEPS.PHOTO_UPLOAD && (
                 <div className="space-y-6">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-1 flex items-center gap-2">
@@ -482,14 +620,14 @@ const OrderWizard: React.FC = () => {
                     </h3>
                     <p className="text-sm text-gray-500">
                       Take clear photos of your boxes. You can upload up to{" "}
-                      {orderData.box_count} photo
-                      {orderData.box_count !== 1 ? "s" : ""}.
+                      {state.orderData.box_count} photo
+                      {state.orderData.box_count !== 1 ? "s" : ""}.
                     </p>
                   </div>
 
                   <PhotoUpload
-                    sessionId={sessionId}
-                    maxFiles={orderData.box_count || MIN_BOX_COUNT}
+                    sessionId={state.sessionId}
+                    maxFiles={state.orderData.box_count || MIN_BOX_COUNT}
                     maxFileSize={10 * 1024 * 1024}
                     acceptedTypes={["image/jpeg", "image/png", "image/webp"]}
                     onPhotosChange={handlePhotosChange}
@@ -507,7 +645,7 @@ const OrderWizard: React.FC = () => {
               )}
 
               {/* Step 4: Slot Selection */}
-              {currentStep === STEPS.SLOT_SELECTION && (
+              {state.currentStep === STEPS.SLOT_SELECTION && (
                 <div className="space-y-6">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-1 flex items-center gap-2">
@@ -528,6 +666,14 @@ const OrderWizard: React.FC = () => {
                         />
                       ))}
                     </div>
+                  ) : slotsError ? (
+                    <Alert variant="destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        Failed to load available time slots. Please refresh and
+                        try again.
+                      </AlertDescription>
+                    </Alert>
                   ) : availableSlots?.slots &&
                     availableSlots.slots.length > 0 ? (
                     <div className="grid gap-3 max-h-96 overflow-y-auto pr-2">
@@ -541,13 +687,18 @@ const OrderWizard: React.FC = () => {
                             className={`cursor-pointer transition-all duration-200 m-1 ${
                               !slot.is_available
                                 ? "opacity-50 cursor-not-allowed"
-                                : selectedSlot?.id === slot.id
+                                : state.selectedSlot?.id === slot.id
                                   ? "ring-2 ring-[#1742B1] bg-[#1742B1]/5 border-[#1742B1]"
                                   : "hover:border-gray-300 hover:shadow-sm"
                             }`}
-                            onClick={() =>
-                              slot.is_available && setSelectedSlot(slot)
-                            }
+                            onClick={() => {
+                              if (slot.is_available) {
+                                setState((prev) => ({
+                                  ...prev,
+                                  selectedSlot: slot,
+                                }));
+                              }
+                            }}
                           >
                             <CardContent className="p-4">
                               <div className="flex items-center justify-between">
@@ -603,7 +754,7 @@ const OrderWizard: React.FC = () => {
               )}
 
               {/* Step 5: Summary */}
-              {currentStep === STEPS.SUMMARY && (
+              {state.currentStep === STEPS.SUMMARY && (
                 <div className="space-y-6">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-1">
@@ -636,8 +787,8 @@ const OrderWizard: React.FC = () => {
                             Number of Boxes
                           </span>
                           <span className="text-sm font-medium text-gray-900">
-                            {orderData.box_count}{" "}
-                            {orderData.box_count === 1 ? "box" : "boxes"}
+                            {state.orderData.box_count}{" "}
+                            {state.orderData.box_count === 1 ? "box" : "boxes"}
                           </span>
                         </div>
                         <div className="flex justify-between items-center py-2 border-b border-gray-100">
@@ -645,24 +796,34 @@ const OrderWizard: React.FC = () => {
                             Photos Uploaded
                           </span>
                           <span className="text-sm font-medium text-gray-900">
-                            {orderData.photo_urls?.length || 0} photo
-                            {(orderData.photo_urls?.length || 0) !== 1
+                            {state.orderData.photo_urls?.length || 0} photo
+                            {(state.orderData.photo_urls?.length || 0) !== 1
                               ? "s"
                               : ""}
                           </span>
                         </div>
-                        {selectedSlot && (
+                        {state.selectedSlot && (
                           <div className="flex justify-between items-start py-2">
                             <span className="text-sm text-gray-600">
                               Drop-off Schedule
                             </span>
                             <div className="text-right">
                               <p className="text-sm font-medium text-gray-900">
-                                {formatDateTime(selectedSlot.start_time).date}
+                                {
+                                  formatDateTime(state.selectedSlot.start_time)
+                                    .date
+                                }
                               </p>
                               <p className="text-xs text-gray-500">
-                                {formatDateTime(selectedSlot.start_time).time} -{" "}
-                                {formatDateTime(selectedSlot.end_time).time}
+                                {
+                                  formatDateTime(state.selectedSlot.start_time)
+                                    .time
+                                }{" "}
+                                -{" "}
+                                {
+                                  formatDateTime(state.selectedSlot.end_time)
+                                    .time
+                                }
                               </p>
                             </div>
                           </div>
@@ -680,9 +841,11 @@ const OrderWizard: React.FC = () => {
                               Drop-off Location
                             </p>
                             <p className="text-sm text-gray-700">
-                              Sort Warehouse
+                              {WAREHOUSE_ADDRESS.name}
                               <br />
-                              591 Central Ave, Brooklyn, NY 11207
+                              {WAREHOUSE_ADDRESS.street},{" "}
+                              {WAREHOUSE_ADDRESS.city},{" "}
+                              {WAREHOUSE_ADDRESS.state} {WAREHOUSE_ADDRESS.zip}
                             </p>
                           </div>
                         </div>
@@ -703,13 +866,13 @@ const OrderWizard: React.FC = () => {
                       <Textarea
                         id="notes"
                         placeholder="Any special instructions or notes for our team..."
-                        value={orderData.notes || ""}
+                        value={state.orderData.notes || ""}
                         onChange={handleNotesChange}
                         maxLength={MAX_NOTES_LENGTH}
                         className="resize-none h-20"
                       />
                       <p className="text-xs text-gray-500 text-right">
-                        {orderData.notes?.length || 0}/{MAX_NOTES_LENGTH}
+                        {state.orderData.notes?.length || 0}/{MAX_NOTES_LENGTH}
                       </p>
                     </div>
                   </div>
@@ -722,7 +885,7 @@ const OrderWizard: React.FC = () => {
           <div className="flex items-center justify-between gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50">
             <button
               onClick={prevStep}
-              disabled={currentStep === STEPS.SERVICE_TYPE}
+              disabled={state.currentStep === STEPS.SERVICE_TYPE}
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               aria-label="Go to previous step"
             >
@@ -732,14 +895,14 @@ const OrderWizard: React.FC = () => {
 
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-500">
-                Step {currentStep} of {Object.keys(STEPS).length}
+                Step {state.currentStep} of {Object.keys(STEPS).length}
               </span>
             </div>
 
-            {currentStep < STEPS.SUMMARY ? (
+            {state.currentStep < STEPS.SUMMARY ? (
               <button
                 onClick={nextStep}
-                disabled={!canProceedFromStep(currentStep)}
+                disabled={!canProceedFromStep(state.currentStep)}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-[#1742B1] text-white rounded-lg font-medium text-sm hover:bg-[#14399F] hover:shadow-lg hover:shadow-[#1742B1]/25 focus:outline-none focus:ring-2 focus:ring-[#1742B1]/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 aria-label="Go to next step"
               >
@@ -749,7 +912,9 @@ const OrderWizard: React.FC = () => {
             ) : (
               <button
                 onClick={handleSubmit}
-                disabled={!canProceedFromStep(currentStep) || isCreatingOrder}
+                disabled={
+                  !canProceedFromStep(state.currentStep) || isCreatingOrder
+                }
                 className="inline-flex items-center gap-2 px-4 py-2 bg-[#1742B1] text-white rounded-lg font-medium text-sm hover:bg-[#14399F] hover:shadow-lg hover:shadow-[#1742B1]/25 focus:outline-none focus:ring-2 focus:ring-[#1742B1]/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 {isCreatingOrder ? (

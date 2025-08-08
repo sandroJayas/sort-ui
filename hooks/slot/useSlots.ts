@@ -3,10 +3,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { AllSlotsRequest, SlotAvailabilityResponse } from "@/types/slot";
 
-export function useSlots(request: AllSlotsRequest) {
+export function useSlots(
+  request: AllSlotsRequest | null,
+  enabled: boolean = true,
+) {
   return useQuery<SlotAvailabilityResponse>({
     queryKey: ["all-slots", request],
     queryFn: async () => {
+      if (!request) {
+        throw new Error("Request is required");
+      }
+
       const res = await fetch("/api/slots", {
         method: "POST",
         headers: {
@@ -22,7 +29,10 @@ export function useSlots(request: AllSlotsRequest) {
 
       return res.json();
     },
-    staleTime: 1000 * 60 * 5,
+    enabled: enabled && !!request, // Only run when enabled AND request exists
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    gcTime: 1000 * 60 * 10, // 10 minutes (formerly cacheTime)
     retry: 1,
+    refetchOnWindowFocus: false, // Prevent refetch on tab focus
   });
 }

@@ -3,7 +3,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { BoxesListResponse, BoxFilterRequest } from "@/types/box";
 
-export function useBoxes(filters?: BoxFilterRequest) {
+interface UseBoxesOptions {
+  filters?: BoxFilterRequest;
+  enabled?: boolean;
+}
+
+export function useBoxes({ filters, enabled = true }: UseBoxesOptions = {}) {
   // Build query params
   const params = new URLSearchParams();
   if (filters?.status) params.append("status", filters.status);
@@ -25,7 +30,10 @@ export function useBoxes(filters?: BoxFilterRequest) {
 
       return res.json();
     },
+    enabled, // Control when the query runs
     staleTime: 1000 * 60 * 5, // 5 min cache
+    gcTime: 1000 * 60 * 10, // 10 min garbage collection (formerly cacheTime)
     retry: 1,
+    refetchOnWindowFocus: false, // Prevent unnecessary refetches
   });
 }
