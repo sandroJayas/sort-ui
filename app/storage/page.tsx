@@ -108,7 +108,7 @@ export default function StoragePage() {
     error: boxesError,
     refetch: refetchBoxes,
   } = useBoxes();
-  const { data: user } = useUser();
+  const { data: user, isLoading: isUserLoading } = useUser();
   const [timeFilter, setTimeFilter] = useState("3months");
   const [nameFilter, setNameFilter] = useState<string | null>(null);
 
@@ -205,7 +205,7 @@ export default function StoragePage() {
 
       <DashboardNavbar />
 
-      {!isVerified && user ? <VerificationAlert /> : null}
+      {!isVerified && !isUserLoading ? <VerificationAlert /> : null}
 
       <main id="main-content" role="main">
         <Container>

@@ -40,6 +40,7 @@ import { useUser } from "@/hooks/useUser";
 import { useCreateOrder } from "@/hooks/order/useCreateOrder";
 import { toast } from "sonner";
 import { PhotoUpload } from "@/components/photos/photo";
+import { isUserValid } from "@/lib/utils";
 
 const STEPS = {
   SERVICE_TYPE: 1,
@@ -287,8 +288,9 @@ const OrderWizard: React.FC = () => {
     <>
       <button
         onClick={handleOpenModal}
-        className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1742B1] text-white rounded-lg font-medium text-sm hover:bg-[#14399F] hover:shadow-lg hover:shadow-[#1742B1]/25 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#1742B1]/20 focus:ring-offset-2"
+        className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1742B1] text-white rounded-lg font-medium text-sm hover:bg-[#14399F] hover:shadow-lg hover:shadow-[#1742B1]/25 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#1742B1]/20 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed "
         aria-label="Create new storage order"
+        disabled={!isUserValid(user)}
       >
         <Plus className="w-4 h-4" />
         Create Order
