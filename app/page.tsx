@@ -1,491 +1,672 @@
 "use client";
 
-import { useRef } from "react";
-import Image from "next/image";
+import { useRef, useEffect } from "react";
 import Link from "next/link";
-import { BoxIcon, ChevronRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Minus } from "lucide-react";
 import {
-  AnimatePresence,
   motion,
-  useInView,
   useScroll,
   useTransform,
+  useMotionValue,
+  useSpring,
 } from "framer-motion";
 import { Input } from "@/components/ui/input";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
 import { signIn } from "next-auth/react";
-import { SortButton, SortCTAButton } from "@/components/sort/SortButton";
-
-// ——————————————————————————
-// Static data
-// ——————————————————————————
-const TRENDING_SHOWS = [
-  {
-    id: 1,
-    title: "Raleigh",
-    image: "/cities/raleigh.png",
-    available: true,
-  },
-  {
-    id: 2,
-    title: "Charlotte",
-    image: "/cities/charlotte.png",
-    available: false,
-  },
-  {
-    id: 3,
-    title: "New York",
-    image: "/cities/new-york.png",
-    available: false,
-  },
-];
-
-const FEATURES = [
-  {
-    id: "box",
-    title: "Boxes Delivered to You",
-    description: "We ship Sort storage boxes right to your door. For free.",
-    iconBg: "bg-[#F8F9FA]",
-    icon: (
-      <Image
-        src="/cards/card-1.svg"
-        alt="Boxes Delivered to You"
-        width={65}
-        height={65}
-      />
-    ),
-  },
-  {
-    id: "pack",
-    title: "Pack on Your Schedule",
-    description:
-      "Take your time: fill each box with clothes, books, keepsakes. Anywhere, anytime.",
-    iconBg: "bg-[#178FB1]/10",
-    icon: (
-      <Image
-        src="/cards/card-2.svg"
-        alt="Pack on Your Schedule"
-        width={65}
-        height={65}
-      />
-    ),
-  },
-  {
-    id: "store",
-    title: "We Pick Up & Store",
-    description:
-      "Schedule a pick-up and we'll collect your boxes and transport them to our secure facility.",
-    iconBg: "bg-[#FF9900]/10",
-    icon: (
-      <Image
-        src="/cards/card-3.svg"
-        alt="We Pick Up & Store"
-        width={65}
-        height={65}
-      />
-    ),
-  },
-  {
-    id: "retrieve",
-    title: "Retrieve Whenever You Need",
-    description:
-      "Need something back? Request a delivery and we'll bring any box straight to you. For free.",
-    iconBg: "bg-[#1742B1]/10",
-    icon: (
-      <Image
-        src="/cards/card-4.svg"
-        alt="Retrieve Whenever You Need"
-        width={65}
-        height={65}
-      />
-    ),
-  },
-];
-
-const FAQ_ITEMS = [
-  {
-    q: "What is Sort?",
-    a:
-      "Sort is a convenient, on-demand storage service that lets you securely store personal items without ever visiting a storage unit. " +
-      "We deliver empty boxes to your door, you fill them at your convenience, and we handle pickup and storage. " +
-      "When you need something back, just request a return. It's that simple.",
-  },
-  {
-    q: "How much does Sort cost?",
-    a: "$19.99/month + $1/sq ft/month",
-  },
-  {
-    q: "What can I store?",
-    a:
-      "You can store almost anything with Sort - from small items like clothes, books, or decorations to larger " +
-      "belongings like lamps, chairs, or even a couch.",
-  },
-  {
-    q: "How do I cancel?",
-    a: "Log into your account, visit Subscription settings, and select “Cancel Plan”. No fees, no hassle.",
-  },
-];
 
 export default function Home() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
-  const faqRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll();
-  const headerOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0.95]);
-  const heroInView = useInView(heroRef, { once: true });
-  const faqInView = useInView(faqRef, { once: true, amount: 0.3 });
+
+  const { scrollY } = useScroll();
+  const heroY = useTransform(scrollY, [0, 1000], [0, -500]);
+  const heroScale = useTransform(scrollY, [0, 500], [1, 0.8]);
+  const heroRotate = useTransform(scrollY, [0, 1000], [0, -5]);
+
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const smoothMouseX = useSpring(mouseX, { stiffness: 25, damping: 20 });
+  const smoothMouseY = useSpring(mouseY, { stiffness: 25, damping: 20 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const { clientX, clientY } = e;
+      const { innerWidth, innerHeight } = window;
+      mouseX.set((clientX / innerWidth - 0.5) * 40);
+      mouseY.set((clientY / innerHeight - 0.5) * 40);
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [mouseX, mouseY]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    // Better way to get form data
     const formData = new FormData(e.currentTarget);
     const email = formData.get("email") as string;
-
     if (!email) return;
 
     try {
       const response = await fetch("/api/auth/signup", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to initiate signup");
-      }
-
+      if (!response.ok) throw new Error("Failed to initiate signup");
       const { authUrl } = await response.json();
-
-      // Redirect to Auth0 with pre-filled email
       window.location.href = authUrl;
     } catch (error) {
       console.error("Signup error:", error);
-      // You might want to show an error message to the user here
     }
   };
 
   return (
-    <div className="font-sans">
-      {/* Hero */}
-      <motion.header style={{ opacity: headerOpacity }} className="relative">
-        <div
-          ref={heroRef}
-          className="h-[80vh] md:h-[85vh] bg-cover bg-center relative"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(23, 66, 177, 0.1), rgba(23, 66, 177, 0.2)), url('/hero-storage.jpg')",
-            backgroundColor: "#F8F9FA", // Fallback
-          }}
+    <>
+      <style jsx global>{`
+        @import url("https://fonts.cdnfonts.com/css/aeonik");
+
+        * {
+          font-family:
+            "Aeonik",
+            -apple-system,
+            BlinkMacSystemFont,
+            sans-serif;
+        }
+
+        body {
+          background: #000;
+          overflow-x: hidden;
+        }
+
+        .text-gradient {
+          background: linear-gradient(
+            135deg,
+            #667eea 0%,
+            #764ba2 25%,
+            #f093fb 50%,
+            #667eea 100%
+          );
+          background-size: 400% 400%;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          animation: gradient-shift 10s ease infinite;
+        }
+
+        @keyframes gradient-shift {
+          0% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+          100% {
+            background-position: 0% 50%;
+          }
+        }
+
+        .brutal-shadow {
+          box-shadow: 10px 10px 0px rgba(102, 126, 234, 0.3);
+        }
+
+        .overflow-bleed {
+          width: 100vw;
+          margin-left: calc(-50vw + 50%);
+        }
+
+        ::selection {
+          background: #667eea;
+          color: white;
+        }
+
+        .distort-text {
+          transform: perspective(400px) rotateY(-5deg);
+        }
+      `}</style>
+
+      <div ref={containerRef} className="bg-black text-white">
+        {/* Navigation - Minimal and Floating */}
+        <motion.nav
+          className="fixed top-0 left-0 w-full z-50 mix-blend-difference"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 0.5 }}
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/10" />
-          <div className="container mx-auto px-8 pt-8 flex justify-between items-center relative z-10">
-            <Logo />
-            <SortButton
-              className="px-6 py-2"
-              onClick={() => signIn("auth0", { callbackUrl: "/storage" })}
+          <div className="flex justify-between items-center p-8 md:p-12">
+            <motion.div
+              className="text-3xl md:text-4xl font-black tracking-tighter"
+              whileHover={{ scale: 0.95 }}
             >
-              Sign In
-            </SortButton>
-          </div>
+              SORT
+            </motion.div>
 
-          <motion.div
-            className="absolute inset-0 flex flex-col items-center justify-center text-center px-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={heroInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6 }}
-          >
-            <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-4 text-white max-w-2xl drop-shadow-lg">
-              All Your Stuff, Stored from Home.
-            </h1>
-            <p className="text-lg md:text-2xl mb-6 text-gray-100 max-w-xl drop-shadow">
-              Starts at $19.99. Cancel at any time.
-            </p>
-            <form
-              className="flex flex-col sm:flex-row gap-4 w-full max-w-xl"
-              onSubmit={handleSubmit}
-            >
-              <Input
-                type="email"
-                name="email"
-                placeholder="Enter your email"
-                className="flex-grow h-14 bg-white border-0 shadow-md text-[#212121] placeholder:text-[#6C757D]"
-                required
-              />
-              <SortCTAButton type="submit" className="h-14 px-6">
-                Get Started
-                <motion.div
-                  animate={{
-                    x: [0, 5, 0],
-                    transition: {
-                      repeat: Number.POSITIVE_INFINITY,
-                      repeatType: "loop",
-                      duration: 1.5,
-                      ease: "easeInOut",
-                    },
-                  }}
-                >
-                  <ChevronRight className="ml-2 h-6 w-6" />
-                </motion.div>
-              </SortCTAButton>
-            </form>
-          </motion.div>
-        </div>
-      </motion.header>
-
-      {/* Promo Banner */}
-      <div
-        className="bg-gradient-to-r from-[#1742B1] to-[#178FB1] py-6"
-        aria-label="Promotional banner"
-      >
-        <div className="container mx-auto px-6">
-          <div className="bg-white rounded-xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-lg">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 flex items-center justify-center bg-gradient-to-br from-[#FF9900] to-[#FFC107] rounded-full shadow-md">
-                <BoxIcon className="fill-white stroke-white" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-[#212121]">
-                  Store for only $19.99
-                </h3>
-                <p className="text-[#6C757D]">
-                  Our most affordable, totally unrestricted plan.
-                </p>
-              </div>
-            </div>
-            <SortButton>Learn more</SortButton>
-          </div>
-        </div>
-      </div>
-
-      {/* Availabilities */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-8">
-          <h2 className="text-3xl font-bold mb-8 text-[#212121]">
-            Available in These Cities
-          </h2>
-          <div className="flex justify-around gap-6 overflow-x-auto pb-2 scrollbar-none">
-            {TRENDING_SHOWS.map((s, i) => (
-              <div
-                key={s.id}
-                className="w-56 flex-shrink-0 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 group relative"
+            <div className="flex items-center gap-8">
+              <motion.button
+                className="relative overflow-hidden group"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => signIn("auth0", { callbackUrl: "/storage" })}
               >
-                <Image
-                  src={s.image}
-                  alt={s.title}
-                  width={224}
-                  height={224}
-                  className="block"
+                <span className="relative z-10 px-8 py-3 border border-white/20 rounded-full block backdrop-blur-sm bg-white/5 font-medium">
+                  Enter
+                </span>
+                <motion.div
+                  className="absolute inset-0 bg-white rounded-full"
+                  initial={{ scale: 0 }}
+                  whileHover={{ scale: 1 }}
+                  transition={{ duration: 0.3 }}
                 />
+                <motion.span className="absolute inset-0 flex items-center justify-center text-black font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                  Enter
+                </motion.span>
+              </motion.button>
+            </div>
+          </div>
+        </motion.nav>
 
-                {/* Hover overlay if unavailable */}
-                {!s.available && (
-                  <div className="absolute inset-0 bg-black bg-opacity-70 opacity-60 flex items-center justify-center transition-opacity duration-300 z-10">
-                    <span className="text-white text-lg font-semibold">
-                      Coming Soon
+        {/* Hero - Unconventional Layout */}
+        <section
+          ref={heroRef}
+          className="relative min-h-screen flex items-center overflow-hidden"
+        >
+          <motion.div
+            className="absolute -right-1/4 top-0 w-[150%] h-full"
+            style={{
+              y: heroY,
+              scale: heroScale,
+              rotate: heroRotate,
+            }}
+          >
+            <img
+              src="https://images.unsplash.com/photo-1514565131-fce0801e3485?w=1920&h=1080&fit=crop"
+              alt="NYC"
+              className="w-full h-full object-cover opacity-40"
+            />
+            <div className="absolute inset-0 bg-gradient-to-l from-transparent via-black/50 to-black" />
+          </motion.div>
+
+          <div className="relative z-10 w-full">
+            <div className="px-8 md:px-12 py-32">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1 }}
+              >
+                {/* Floating Badge */}
+                <motion.div
+                  className="inline-block mb-8"
+                  style={{ x: smoothMouseX, y: smoothMouseY }}
+                >
+                  <div className="px-6 py-2 border border-white/10 rounded-full backdrop-blur-sm bg-white/5">
+                    <span className="text-xs tracking-widest font-light">
+                      NYC ONLY — 2025
                     </span>
                   </div>
-                )}
+                </motion.div>
 
-                <div className="p-4 bg-white relative z-0">
-                  <span className="inline-block bg-[#178FB1] text-white rounded-full w-7 h-7 text-center leading-7 mr-2 shadow-sm">
-                    {i + 1}
-                  </span>
-                  <span className="font-medium text-[#212121]">{s.title}</span>
+                {/* Massive Typography */}
+                <div className="relative">
+                  <motion.h1
+                    className="text-[12vw] md:text-[10vw] font-black leading-[0.8] tracking-tighter mb-8"
+                    initial={{ x: -100, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ duration: 0.8, delay: 0.2 }}
+                  >
+                    INFINITE
+                  </motion.h1>
+
+                  <motion.div
+                    className="overflow-bleed"
+                    initial={{ x: 200, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ duration: 0.8, delay: 0.3 }}
+                  >
+                    <h1 className="text-[12vw] md:text-[10vw] font-black leading-[0.8] tracking-tighter text-gradient mb-12 text-right pr-8 md:pr-12">
+                      SPACE
+                    </h1>
+                  </motion.div>
+
+                  {/* Floating Elements */}
+                  <motion.div
+                    className="absolute -top-4 right-0 md:right-[20%] text-sm font-light"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8 }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Minus className="w-8 h-[1px]" />
+                      <span>FOR YOUR TINY APT</span>
+                    </div>
+                  </motion.div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* Features */}
-      <section className="py-20 bg-[#F8F9FA]">
-        <div className="container mx-auto px-8 text-center">
-          <h2 className="text-3xl font-bold mb-12 text-[#212121]">
-            Why Choose Sort?
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {FEATURES.map((f) => (
+                {/* Subtext Grid */}
+                <motion.div
+                  className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-20 max-w-5xl"
+                  initial={{ opacity: 0, y: 40 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                >
+                  <div className="md:col-span-2">
+                    <p className="text-xl md:text-2xl font-light leading-relaxed text-gray-300">
+                      We&#39;re not another storage company. We&#39;re the
+                      spatial revolution your 400sq ft needs. Manhattan&#39;s
+                      answer to the storage crisis.
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                      <span className="text-sm uppercase tracking-wider">
+                        Live in NYC
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="w-2 h-2 bg-white/30 rounded-full" />
+                      <span className="text-sm uppercase tracking-wider text-gray-500">
+                        Other cities Soon
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* CTA Section - Offset */}
+                <motion.div
+                  className="mt-20 md:ml-[15%]"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.8 }}
+                >
+                  <form
+                    onSubmit={handleSubmit}
+                    className="flex flex-col md:flex-row gap-4 max-w-xl"
+                  >
+                    <Input
+                      type="email"
+                      name="email"
+                      placeholder="Email Address"
+                      className="flex-1 h-16 bg-transparent border-white/20 text-white placeholder:text-white/30 text-lg font-light rounded-none"
+                      required
+                    />
+                    <Button
+                      type="submit"
+                      className="h-16 px-12 bg-white text-black hover:bg-white/90 font-bold text-lg rounded-none brutal-shadow"
+                    >
+                      CLAIM SPACE
+                      <ArrowUpRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </form>
+
+                  <div className="flex gap-8 mt-6 text-sm text-gray-500">
+                    <span>$55.00/mo</span>
+                    <span>•</span>
+                    <span>2hr delivery</span>
+                    <span>•</span>
+                    <span>Cancel anytime</span>
+                  </div>
+                </motion.div>
+              </motion.div>
+            </div>
+          </div>
+
+          {/* Scroll Indicator */}
+          <motion.div
+            className="absolute bottom-8 left-8 md:left-12"
+            animate={{ y: [0, 10, 0] }}
+            transition={{ repeat: Infinity, duration: 2 }}
+          >
+            <div className="w-[1px] h-20 bg-white/20" />
+          </motion.div>
+        </section>
+
+        {/* Stats - Full Bleed */}
+        <section className="overflow-bleed py-32 relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+          <div className="relative px-8 md:px-12">
+            <motion.div
+              className="flex flex-col md:flex-row gap-16 md:gap-32"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              transition={{ duration: 1 }}
+              viewport={{ once: true }}
+            >
+              {[
+                { value: "10K", label: "NYC UNITS", suffix: "+" },
+                { value: "2", label: "HOUR DELIVERY", suffix: "HR" },
+                { value: "99", label: "UPTIME", suffix: "%" },
+              ].map((stat, i) => (
+                <motion.div
+                  key={i}
+                  className="relative"
+                  initial={{ y: 50, opacity: 0 }}
+                  whileInView={{ y: 0, opacity: 1 }}
+                  transition={{ delay: i * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-[8vw] md:text-[6vw] font-black tracking-tighter">
+                      {stat.value}
+                    </span>
+                    <span className="text-2xl md:text-3xl font-light text-gray-500">
+                      {stat.suffix}
+                    </span>
+                  </div>
+                  <div className="text-xs uppercase tracking-[0.3em] text-gray-600 mt-2">
+                    {stat.label}
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Features - Asymmetric Grid */}
+        <section className="py-32 px-8 md:px-12">
+          <motion.div
+            className="mb-20"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-[8vw] md:text-[6vw] font-black tracking-tighter mb-4">
+              THE PROCESS
+            </h2>
+            <div className="w-20 h-[2px] bg-white" />
+          </motion.div>
+
+          <div className="space-y-32">
+            {[
+              {
+                number: "001",
+                title: "BOXES ARRIVE",
+                description:
+                  "Military-grade storage containers delivered to your door. We navigate your walk-up.",
+                image:
+                  "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=600&fit=crop",
+                align: "left",
+              },
+              {
+                number: "002",
+                title: "YOU PACK",
+                description:
+                  "That winter coat, old yearbooks, the exercise equipment. Pack it all.",
+                image:
+                  "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&h=600&fit=crop",
+                align: "right",
+              },
+              {
+                number: "003",
+                title: "WE COLLECT",
+                description:
+                  "Our crew handles everything. Stairs, doormen, that narrow hallway.",
+                image:
+                  "https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=800&h=600&fit=crop",
+                align: "left",
+              },
+              {
+                number: "004",
+                title: "INSTANT ACCESS",
+                description:
+                  "Need it back? 2-hour delivery in Manhattan. Because NYC doesn't wait.",
+                image:
+                  "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&h=600&fit=crop",
+                align: "right",
+              },
+            ].map((feature, i) => (
               <motion.div
-                key={f.id}
-                className="p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300"
-                whileHover={{ y: -5 }}
+                key={i}
+                className={`grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 ${
+                  feature.align === "right" ? "md:ml-[20%]" : "md:mr-[20%]"
+                }`}
+                initial={{
+                  opacity: 0,
+                  x: feature.align === "right" ? 100 : -100,
+                }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8 }}
+                viewport={{ once: true }}
               >
                 <div
-                  className={`mx-auto w-20 h-20 mb-4 rounded-full ${f.iconBg} flex items-center justify-center shadow-sm`}
+                  className={`space-y-6 ${feature.align === "right" ? "md:order-2" : ""}`}
                 >
-                  {f.icon}
+                  <div className="text-gray-600 text-sm tracking-widest">
+                    {feature.number}
+                  </div>
+                  <h3 className="text-4xl md:text-5xl font-black tracking-tighter">
+                    {feature.title}
+                  </h3>
+                  <p className="text-lg font-light text-gray-400 leading-relaxed">
+                    {feature.description}
+                  </p>
+                  <motion.button
+                    className="group flex items-center gap-2 text-sm tracking-wider"
+                    whileHover={{ x: 10 }}
+                  >
+                    <span>LEARN MORE</span>
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
+                  </motion.button>
                 </div>
-                <h3 className="text-xl font-semibold mb-2 text-[#212121]">
-                  {f.title}
-                </h3>
-                <p className="text-[#6C757D]">{f.description}</p>
+                <div
+                  className={`relative h-[400px] ${feature.align === "right" ? "md:order-1" : ""}`}
+                >
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20"
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ duration: 0.3 }}
+                  />
+                  <img
+                    src={feature.image}
+                    alt={feature.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute -bottom-4 -right-4 w-full h-full border border-white/20" />
+                </div>
               </motion.div>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* FAQ */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-8 max-w-2xl">
-          <motion.h2
-            ref={faqRef}
-            className="text-3xl font-bold text-center mb-10 text-[#212121]"
-            initial={{ opacity: 0, y: 20 }}
-            animate={faqInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6 }}
-          >
-            Frequently Asked Questions
-          </motion.h2>
-          <div className="space-y-4">
-            {FAQ_ITEMS.map(({ q, a }, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                animate={faqInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.5, delay: idx * 0.1 }}
-              >
-                <Accordion type="single" collapsible>
-                  <AccordionItem
-                    value={`faq-${idx}`}
-                    className="border rounded-lg shadow-sm"
+        {/* Pricing - Brutal Design */}
+        <section className="overflow-bleed py-32 bg-white text-black">
+          <div className="px-8 md:px-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
+              <div>
+                <motion.h2
+                  className="text-[10vw] md:text-[8vw] font-black tracking-tighter leading-[0.8] mb-8"
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                >
+                  SIMPLE
+                  <br />
+                  <span className="text-gray-300">PRICING</span>
+                </motion.h2>
+
+                <div className="space-y-8">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-6xl font-black">$19</span>
+                    <span className="text-2xl text-gray-500">.99/mo</span>
+                  </div>
+
+                  <div className="space-y-4">
+                    {[
+                      "Unlimited boxes",
+                      "Free delivery & pickup",
+                      "Climate controlled",
+                      "2hr Manhattan returns",
+                      "$1 per sq ft",
+                      "Cancel anytime",
+                    ].map((item, i) => (
+                      <motion.div
+                        key={i}
+                        className="flex items-center gap-4"
+                        initial={{ opacity: 0, x: -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                        viewport={{ once: true }}
+                      >
+                        <div className="w-8 h-[1px] bg-black" />
+                        <span className="text-lg font-light">{item}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  <motion.button
+                    className="mt-12 px-12 py-4 bg-black text-white font-bold text-lg hover:bg-gray-900 transition-colors"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => signIn("auth0", { callbackUrl: "/storage" })}
                   >
-                    <AccordionTrigger className="w-full px-6 py-4 bg-[#F8F9FA] rounded-t-lg hover:bg-gray-100 text-left text-lg font-medium text-[#212121] transition-colors duration-200">
-                      {q}
-                    </AccordionTrigger>
-                    <AnimatePresence>
-                      <AccordionContent className="px-6 py-4 bg-white rounded-b-lg text-[#6C757D]">
-                        {a}
-                      </AccordionContent>
-                    </AnimatePresence>
-                  </AccordionItem>
-                </Accordion>
+                    START NOW
+                  </motion.button>
+                </div>
+              </div>
+
+              <div className="relative h-[600px] md:h-auto">
+                <img
+                  src="https://images.unsplash.com/photo-1600121848594-d8644e57abab?w=800&h=1000&fit=crop"
+                  alt="Storage"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* NYC Section - Map Style */}
+        <section className="py-32 px-8 md:px-12">
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-[8vw] md:text-[6vw] font-black tracking-tighter mb-16">
+              NYC
+              <br />
+              <span className="text-gradient">EXCLUSIVE</span>
+            </h2>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { name: "MANHATTAN", status: "LIVE", time: "2HR DELIVERY" },
+              { name: "BROOKLYN", status: "LIVE", time: "4HR DELIVERY" },
+              { name: "QUEENS", status: "LIVE", time: "NEXT DAY" },
+            ].map((borough, i) => (
+              <motion.div
+                key={i}
+                className="relative group"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                viewport={{ once: true }}
+                whileHover={{ y: -10 }}
+              >
+                <div className="p-8 border border-white/20 backdrop-blur-sm bg-white/5 hover:bg-white/10 transition-colors">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                    <span className="text-xs tracking-widest text-green-500">
+                      {borough.status}
+                    </span>
+                  </div>
+                  <h3 className="text-3xl font-black tracking-tighter mb-2">
+                    {borough.name}
+                  </h3>
+                  <p className="text-sm text-gray-500">{borough.time}</p>
+                </div>
               </motion.div>
             ))}
           </div>
 
           <motion.div
-            className="text-center mt-14"
-            initial={{ opacity: 0, y: 20 }}
-            animate={faqInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
+            className="mt-16 p-8 border border-white/10 backdrop-blur-sm bg-white/5"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            viewport={{ once: true }}
           >
-            <p className="text-lg md:text-xl mb-5 text-[#212121]">
-              Ready to store? Enter your email to create or restart your
-              membership.
+            <p className="text-sm tracking-widest text-gray-500">
+              EXPANDING 2025: LOS ANGELES • SAN FRANCISCO • CHICAGO • BOSTON •
+              MIAMI
             </p>
-            <form
-              className="flex flex-col md:flex-row max-w-3xl mx-auto gap-2"
+          </motion.div>
+        </section>
+
+        {/* Final CTA - Full Screen */}
+        <section className="min-h-screen flex items-center justify-center relative overflow-hidden">
+          <motion.div
+            className="absolute inset-0"
+            initial={{ scale: 1.2 }}
+            whileInView={{ scale: 1 }}
+            transition={{ duration: 1 }}
+            viewport={{ once: true }}
+          >
+            <img
+              src="https://images.unsplash.com/photo-1519121785383-3229633bb75b?w=1920&h=1080&fit=crop"
+              alt="NYC Night"
+              className="w-full h-full object-cover opacity-30"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/60" />
+          </motion.div>
+
+          <div className="relative z-10 text-center px-8">
+            <motion.h2
+              className="text-[10vw] md:text-[8vw] font-black tracking-tighter leading-[0.8] mb-8"
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+            >
+              YOUR SPACE
+              <br />
+              <span className="text-gradient p-1">AWAITS</span>
+            </motion.h2>
+
+            <motion.form
               onSubmit={handleSubmit}
+              className="max-w-md mx-auto"
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              viewport={{ once: true }}
             >
               <Input
                 type="email"
                 name="email"
-                placeholder="Email address"
-                className="h-14 bg-white border border-gray-200 rounded-lg px-4 flex-grow text-[#212121] placeholder:text-[#6C757D] shadow-sm focus:shadow-md transition-shadow duration-200"
+                placeholder="your@email.com"
+                className="w-full h-16 bg-white/10 border-white/20 text-white placeholder:text-white/30 text-lg font-light rounded-none mb-4"
                 required
               />
-              <motion.div whileTap={{ scale: 0.95 }}>
-                <SortCTAButton type="submit" className="h-14 text-xl px-8">
-                  Get Started
-                  <motion.div
-                    animate={{
-                      x: [0, 5, 0],
-                      transition: {
-                        repeat: Number.POSITIVE_INFINITY,
-                        repeatType: "loop",
-                        duration: 1.5,
-                        ease: "easeInOut",
-                      },
-                    }}
-                  >
-                    <ChevronRight className="ml-2 h-6 w-6" />
-                  </motion.div>
-                </SortCTAButton>
-              </motion.div>
-            </form>
-          </motion.div>
-        </div>
-      </section>
+              <Button
+                type="submit"
+                className="w-full h-16 bg-white text-black hover:bg-white/90 font-black text-lg rounded-none"
+              >
+                CLAIM YOUR SPACE NOW
+              </Button>
+            </motion.form>
+          </div>
+        </section>
 
-      {/* Footer */}
-      <footer className="bg-[#212121] text-[#6C757D] py-12">
-        <div className="container mx-auto px-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-          <div>
-            <h4 className="text-white font-semibold mb-4">Company</h4>
-            <ul className="space-y-2 text-sm">
-              {["About", "Careers", "Press", "Blog"].map((l) => (
-                <li key={l}>
-                  <Link
-                    href="#"
-                    className="hover:text-white transition-colors duration-200"
-                  >
-                    {l}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-white font-semibold mb-4">Support</h4>
-            <ul className="space-y-2 text-sm">
-              {["Help Centre", "Privacy Policy", "Terms of Use", "Contact"].map(
-                (l) => (
-                  <li key={l}>
-                    <Link
-                      href="#"
-                      className="hover:text-white transition-colors duration-200"
-                    >
-                      {l}
-                    </Link>
-                  </li>
-                ),
-              )}
-            </ul>
-          </div>
-          <div className="col-span-2 sm:col-span-1 md:col-span-2">
-            <div className="flex items-center justify-center sm:justify-start h-full">
-              <div className="text-center sm:text-left">
-                <Logo isLight />
-                <p className="text-sm mt-4">
-                  &copy; {new Date().getFullYear()} Sort, Inc. All rights
-                  reserved.
-                </p>
-              </div>
+        {/* Minimal Footer */}
+        <footer className="py-8 px-8 md:px-12 border-t border-white/10">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="text-2xl font-black tracking-tighter">SORT</div>
+            <div className="flex gap-8 text-xs tracking-widest text-gray-600">
+              <Link href="#" className="hover:text-white transition-colors">
+                TERMS
+              </Link>
+              <Link href="#" className="hover:text-white transition-colors">
+                PRIVACY
+              </Link>
+              <Link href="#" className="hover:text-white transition-colors">
+                CONTACT
+              </Link>
             </div>
+            <div className="text-xs text-gray-600">© 2025 NYC</div>
           </div>
-        </div>
-      </footer>
-    </div>
-  );
-}
-
-// ——————————————————————————
-// Logo component - Updated
-// ——————————————————————————
-function Logo({ isLight = false }: { isLight?: boolean }) {
-  return (
-    <div className="flex items-center space-x-2">
-      <div
-        className={`w-10 h-10 ${isLight ? "bg-white" : "bg-[#1742B1]"} rounded-lg flex items-center justify-center shadow-sm`}
-      >
-        <BoxIcon
-          className={`w-6 h-6 ${isLight ? "text-[#1742B1]" : "text-white"}`}
-        />
+        </footer>
       </div>
-      <span
-        className={`text-2xl font-bold ${isLight ? "text-white" : "text-[#1742B1]"}`}
-      >
-        Sort
-      </span>
-    </div>
+    </>
   );
 }
