@@ -39,7 +39,6 @@ import {
 import { useUser } from "@/hooks/useUser";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { useSubscription } from "@/hooks/subscription/useSubscription";
 
 // ============= Types =============
 interface NavLinkProps {
@@ -179,8 +178,6 @@ export const DashboardNavbar: React.FC = () => {
   const queryClient = useQueryClient();
   const { logout } = useLogout();
   const { data: user } = useUser();
-  const { data: subscription, isLoading: subscriptionLoading } =
-    useSubscription();
   const pathname = usePathname();
 
   // Mock notifications (replace with real data)
@@ -246,9 +243,7 @@ export const DashboardNavbar: React.FC = () => {
           {/* Logo and Desktop Navigation */}
           <div className="flex items-center gap-8">
             {/* Logo with Home Link */}
-            <Link href="/storage" className="flex items-center gap-2 group">
-              <SortLogo />
-            </Link>
+            <SortLogo />
 
             {/* Desktop Navigation */}
             <nav
@@ -268,7 +263,7 @@ export const DashboardNavbar: React.FC = () => {
                 isActive={pathname.startsWith("/subscription")}
                 icon={<CreditCard className="w-4 h-4" />}
                 badge={
-                  subscription?.status !== "active" && !subscriptionLoading
+                  user && user?.subscription_status !== "active"
                     ? "!"
                     : undefined
                 }
@@ -376,7 +371,7 @@ export const DashboardNavbar: React.FC = () => {
                       <p className="text-xs text-[#333333] truncate">
                         {user?.email}
                       </p>
-                      {subscription?.status === "active" && (
+                      {user?.subscription_status === "active" && (
                         <div className="flex items-center gap-1 mt-1">
                           <Sparkles className="w-3 h-3 text-[#FF9900]" />
                           <span className="text-xs font-medium text-[#FF9900]">
@@ -461,7 +456,7 @@ export const DashboardNavbar: React.FC = () => {
                           {user?.first_name} {user?.last_name}
                         </p>
                         <p className="text-xs text-[#333333]">{user?.email}</p>
-                        {subscription?.status === "active" && (
+                        {user?.subscription_status === "active" && (
                           <div className="flex items-center gap-1 mt-1">
                             <Sparkles className="w-3 h-3 text-[#FF9900]" />
                             <span className="text-xs font-medium text-[#FF9900]">
@@ -499,7 +494,7 @@ export const DashboardNavbar: React.FC = () => {
                     icon={<CreditCard className="w-5 h-5" />}
                     isActive={pathname.startsWith("/subscription")}
                     badge={
-                      subscription?.status !== "active" && !subscriptionLoading
+                      user && user?.subscription_status !== "active"
                         ? "!"
                         : undefined
                     }

@@ -13,6 +13,7 @@ export type User = {
   payment_method_id?: string;
   created_at: string;
   updated_at: string;
+  subscription_status: string;
 };
 
 export type UpdateProfileRequest = {

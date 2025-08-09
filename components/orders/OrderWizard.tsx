@@ -48,7 +48,6 @@ import { useCreateOrder } from "@/hooks/order/useCreateOrder";
 import { toast } from "sonner";
 import { PhotoUpload } from "@/components/photos/photo";
 import { isUserValid } from "@/lib/utils";
-import { useSubscription } from "@/hooks/subscription/useSubscription";
 import { User } from "@/types/user";
 
 // ============= Constants =============
@@ -201,17 +200,11 @@ const OrderWizard: React.FC = () => {
 
   const { data: user, error: userError } = useUser();
   const { mutate: createOrder, isPending: isCreatingOrder } = useCreateOrder();
-  const { data: subscription, isLoading: isLoadingSubscription } =
-    useSubscription();
 
   // Check if user can create orders
   const canCreateOrder = useMemo(() => {
-    return (
-      isUserValid(user) &&
-      !isLoadingSubscription &&
-      subscription?.status === "active"
-    );
-  }, [user, subscription, isLoadingSubscription]);
+    return isUserValid(user) && user?.subscription_status === "active";
+  }, [user]);
 
   // Date range for slots - only calculate when needed
   const shouldLoadSlots =
@@ -256,7 +249,7 @@ const OrderWizard: React.FC = () => {
 
   const handleOpenModal = useCallback(() => {
     if (!canCreateOrder) {
-      if (!subscription || subscription.status !== "active") {
+      if (!user || user?.subscription_status !== "active") {
         toast.error("Active subscription required", {
           description: "Please subscribe to create storage orders.",
         });
@@ -269,7 +262,7 @@ const OrderWizard: React.FC = () => {
     }
     setIsModalOpen(true);
     resetWizard();
-  }, [canCreateOrder, subscription, user, resetWizard]);
+  }, [canCreateOrder, user, resetWizard]);
 
   const handleCloseModal = useCallback(() => {
     if (isCreatingOrder) return;

@@ -17,7 +17,6 @@ import {
   AlertCircle,
   Star,
 } from "lucide-react";
-import { useSubscription } from "@/hooks/subscription/useSubscription";
 
 interface MenuItem {
   name: string;
@@ -33,7 +32,6 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ tab }) => {
-  const { data: subscriptionData } = useSubscription();
   const { data: user, isLoading, error } = useUser();
   const { data: session } = useSession();
 
@@ -155,7 +153,7 @@ const Sidebar: React.FC<SidebarProps> = ({ tab }) => {
             </div>
 
             {/* Premium Badge - Using Orange Accent */}
-            {subscriptionData?.status === "active" && (
+            {user?.subscription_status === "active" && (
               <div className="flex items-center gap-1 px-2 py-1 bg-[#FF9900] rounded-full">
                 <Star className="w-3 h-3 text-white fill-white" />
                 <span className="text-xs font-medium text-white">PRO</span>
