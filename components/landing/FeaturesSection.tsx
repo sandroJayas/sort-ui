@@ -63,7 +63,7 @@ export default function FeaturesSection() {
       </m.div>
 
       <div className="space-y-32">
-        {features.map((feature, i) => (
+        {features.map((feature) => (
           <m.div
             key={feature.number}
             className={`grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 ${
