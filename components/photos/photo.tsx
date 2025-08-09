@@ -25,6 +25,7 @@ interface UploadingFile {
   status: "uploading" | "success" | "error";
   error?: string;
   progress?: number;
+  uploadId: string; // Added for better tracking
 }
 
 const DEFAULT_MAX_FILES = 10;
@@ -42,6 +43,8 @@ export function PhotoUpload({
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   const [dragActive, setDragActive] = useState(false);
   const previewUrlsRef = useRef<Set<string>>(new Set());
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const mountedRef = useRef(true);
 
   // Hooks
   const { data: sessionPhotos, isLoading: isLoadingPhotos } =
@@ -51,23 +54,39 @@ export function PhotoUpload({
 
   // Get current photo URLs from session data - memoized to prevent unnecessary renders
   const currentPhotoUrls = useMemo(() => {
-    return (
-      sessionPhotos?.photos?.map((photo) => photo.url).filter(Boolean) || []
-    );
+    if (!sessionPhotos?.photos) return [];
+    return sessionPhotos.photos
+      .map((photo) => photo.url)
+      .filter((url): url is string => Boolean(url));
   }, [sessionPhotos]);
 
   // Notify parent of photo changes when session photos change
   useEffect(() => {
-    if (onPhotosChange && currentPhotoUrls.length >= 0) {
+    if (onPhotosChange && mountedRef.current) {
       onPhotosChange(currentPhotoUrls);
     }
   }, [currentPhotoUrls, onPhotosChange]);
 
-  // Cleanup preview URLs
+  // Cleanup on unmount
   useEffect(() => {
+    mountedRef.current = true;
+
     return () => {
+      mountedRef.current = false;
+
+      // Clear any pending timeouts
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+
+      // Cleanup all preview URLs
       previewUrlsRef.current.forEach((url) => {
-        URL.revokeObjectURL(url);
+        try {
+          URL.revokeObjectURL(url);
+        } catch (e) {
+          console.error("Error revoking URL:", e);
+        }
       });
       previewUrlsRef.current.clear();
     };
@@ -80,17 +99,31 @@ export function PhotoUpload({
     return url;
   }, []);
 
-  // Cleanup preview URL
+  // Cleanup preview URL safely
   const cleanupPreviewUrl = useCallback((url: string) => {
     if (url.startsWith("blob:")) {
-      URL.revokeObjectURL(url);
-      previewUrlsRef.current.delete(url);
+      try {
+        URL.revokeObjectURL(url);
+        previewUrlsRef.current.delete(url);
+      } catch (e) {
+        console.error("Error revoking URL:", e);
+      }
     }
+  }, []);
+
+  // Generate unique upload ID
+  const generateUploadId = useCallback((): string => {
+    return `upload-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }, []);
 
   // File validation
   const validateFile = useCallback(
     (file: File): string | null => {
+      // Check if it's actually a file
+      if (!file || !(file instanceof File)) {
+        return "Invalid file object";
+      }
+
       // Check file type
       if (!acceptedTypes.includes(file.type)) {
         const acceptedExtensions = acceptedTypes
@@ -119,6 +152,8 @@ export function PhotoUpload({
   // Handle file uploads
   const handleFiles = useCallback(
     async (files: FileList | File[]) => {
+      if (!mountedRef.current) return;
+
       const fileArray = Array.from(files);
       const currentCount = currentPhotoUrls.length + uploadingFiles.length;
       const remainingSlots = maxFiles - currentCount;
@@ -130,12 +165,14 @@ export function PhotoUpload({
       // Limit files to available slots
       const filesToProcess = fileArray.slice(0, remainingSlots);
       const validFiles: File[] = [];
+      const fileUploadMap = new Map<string, File>(); // Track files by unique upload ID
       const newUploadingFiles: UploadingFile[] = [];
 
       // Process and validate files
       filesToProcess.forEach((file) => {
         const error = validateFile(file);
-        const id = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const id = generateUploadId();
+        const uploadId = generateUploadId(); // Unique ID for tracking this specific upload
         const preview = createPreviewUrl(file);
 
         if (error) {
@@ -143,42 +180,46 @@ export function PhotoUpload({
             file,
             preview,
             id,
+            uploadId,
             status: "error",
             error,
           });
         } else {
           validFiles.push(file);
+          fileUploadMap.set(uploadId, file);
           newUploadingFiles.push({
             file,
             preview,
             id,
+            uploadId,
             status: "uploading",
             progress: 0,
           });
         }
       });
 
+      if (!mountedRef.current) return;
+
       setUploadingFiles((prev) => [...prev, ...newUploadingFiles]);
 
       // Upload valid files
       if (validFiles.length > 0) {
         try {
+          const uploadIds = Array.from(fileUploadMap.keys());
+
           await uploadMutation.mutateAsync(
             { sessionId, photos: validFiles },
             {
               onSuccess: () => {
-                // Mark successful uploads
+                if (!mountedRef.current) return;
+
+                // Mark successful uploads using unique upload IDs
                 setUploadingFiles((prev) =>
                   prev.map((uploadingFile) => {
-                    const wasUploaded = validFiles.some(
-                      (validFile) =>
-                        validFile.name === uploadingFile.file.name &&
-                        validFile.size === uploadingFile.file.size &&
-                        validFile.lastModified ===
-                          uploadingFile.file.lastModified,
-                    );
-
-                    if (wasUploaded && uploadingFile.status === "uploading") {
+                    if (
+                      uploadIds.includes(uploadingFile.uploadId) &&
+                      uploadingFile.status === "uploading"
+                    ) {
                       return {
                         ...uploadingFile,
                         status: "success" as const,
@@ -189,36 +230,50 @@ export function PhotoUpload({
                   }),
                 );
 
-                // Remove successful uploads after delay
-                setTimeout(() => {
+                // Remove successful uploads after delay with cleanup
+                if (timeoutRef.current) {
+                  clearTimeout(timeoutRef.current);
+                }
+
+                timeoutRef.current = setTimeout(() => {
+                  if (!mountedRef.current) return;
+
                   setUploadingFiles((prev) => {
-                    const successful = prev.filter(
-                      (f) => f.status === "success",
-                    );
-                    const remaining = prev.filter(
-                      (f) => f.status !== "success",
+                    const toRemove = prev.filter(
+                      (f) =>
+                        uploadIds.includes(f.uploadId) &&
+                        f.status === "success",
                     );
 
-                    // Cleanup preview URLs for successful uploads
-                    successful.forEach((file) => {
-                      cleanupPreviewUrl(file.preview);
-                    });
+                    // Cleanup preview URLs after state update
+                    setTimeout(() => {
+                      toRemove.forEach((file) => {
+                        cleanupPreviewUrl(file.preview);
+                      });
+                    }, 100);
 
-                    return remaining;
+                    return prev.filter(
+                      (f) =>
+                        !(
+                          uploadIds.includes(f.uploadId) &&
+                          f.status === "success"
+                        ),
+                    );
                   });
+
+                  timeoutRef.current = null;
                 }, 1500);
               },
               onError: (error) => {
-                // Mark failed uploads
+                if (!mountedRef.current) return;
+
+                // Mark failed uploads using unique upload IDs
                 setUploadingFiles((prev) =>
                   prev.map((uploadingFile) => {
-                    const wasInUpload = validFiles.some(
-                      (validFile) =>
-                        validFile.name === uploadingFile.file.name &&
-                        validFile.size === uploadingFile.file.size,
-                    );
-
-                    if (wasInUpload && uploadingFile.status === "uploading") {
+                    if (
+                      uploadIds.includes(uploadingFile.uploadId) &&
+                      uploadingFile.status === "uploading"
+                    ) {
                       return {
                         ...uploadingFile,
                         status: "error" as const,
@@ -247,6 +302,7 @@ export function PhotoUpload({
       maxFiles,
       validateFile,
       createPreviewUrl,
+      generateUploadId,
       uploadMutation,
       sessionId,
       cleanupPreviewUrl,
@@ -297,7 +353,10 @@ export function PhotoUpload({
       setUploadingFiles((prev) => {
         const file = prev.find((f) => f.id === id);
         if (file) {
-          cleanupPreviewUrl(file.preview);
+          // Delay cleanup to ensure image has finished rendering
+          setTimeout(() => {
+            cleanupPreviewUrl(file.preview);
+          }, 100);
         }
         return prev.filter((f) => f.id !== id);
       });
@@ -308,6 +367,8 @@ export function PhotoUpload({
   // Delete photo
   const handleDeletePhoto = useCallback(
     (photoId: string) => {
+      if (!mountedRef.current) return;
+
       deleteMutation.mutate(photoId, {
         onError: (error) => {
           console.error("Failed to delete photo:", error);
@@ -356,6 +417,15 @@ export function PhotoUpload({
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
           onDrop={handleDrop}
+          role="button"
+          tabIndex={0}
+          aria-label="Upload photos"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              fileInputRef.current?.click();
+            }
+          }}
         >
           <Upload className="mx-auto h-8 w-8 text-gray-400 mb-3" />
           <div className="space-y-1">
@@ -377,6 +447,9 @@ export function PhotoUpload({
             className="mt-3"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploadingCount > 0}
+            aria-label={
+              uploadingCount > 0 ? "Uploading files" : "Choose files to upload"
+            }
           >
             {uploadingCount > 0 ? "Uploading..." : "Choose Files"}
           </Button>
@@ -388,6 +461,7 @@ export function PhotoUpload({
             accept={acceptedTypes.join(",")}
             onChange={(e) => e.target.files && handleFiles(e.target.files)}
             className="hidden"
+            aria-hidden="true"
           />
         </div>
       )}
@@ -411,12 +485,18 @@ export function PhotoUpload({
             <div key={item.id} className="relative group">
               <div className="aspect-square relative rounded-lg overflow-hidden bg-gray-100">
                 <Image
-                  src={item.preview || "/placeholder.svg"}
+                  src={item.preview}
                   alt={item.file.name}
                   fill
                   className={`object-cover transition-opacity ${
                     item.status === "error" ? "opacity-50" : ""
                   }`}
+                  sizes="(max-width: 640px) 50vw, 33vw"
+                  onError={(e) => {
+                    // Fallback for broken images
+                    const target = e.target as HTMLImageElement;
+                    target.src = "/placeholder.svg";
+                  }}
                 />
 
                 {/* Status Overlay */}
@@ -428,7 +508,10 @@ export function PhotoUpload({
                     </div>
                   )}
                   {item.status === "success" && (
-                    <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center scale-100 animate-[scale-in_0.2s_ease-out]">
+                    <div
+                      className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center"
+                      style={{ animation: "scale-in 0.2s ease-out" }}
+                    >
                       <Check className="w-6 h-6 text-white" />
                     </div>
                   )}
@@ -448,6 +531,7 @@ export function PhotoUpload({
                   variant="destructive"
                   className="absolute top-2 right-2 h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                   onClick={() => removeUploadingFile(item.id)}
+                  aria-label={`Remove ${item.file.name}`}
                 >
                   <X className="w-4 h-4" />
                 </Button>
@@ -460,18 +544,22 @@ export function PhotoUpload({
           ))}
 
           {/* Uploaded Photos from Session */}
-          {currentPhotoUrls.map((url, index) => {
-            const photo = sessionPhotos?.photos?.[index];
-            if (!photo) return null;
+          {sessionPhotos?.photos?.map((photo) => {
+            if (!photo || !photo.url) return null;
 
             return (
               <div key={photo.id} className="relative group">
                 <div className="aspect-square relative rounded-lg overflow-hidden bg-gray-100">
                   <Image
-                    src={url || "/placeholder.svg"}
-                    alt={photo.file_name}
+                    src={photo.url}
+                    alt={photo.file_name || "Uploaded photo"}
                     fill
                     className="object-cover"
+                    sizes="(max-width: 640px) 50vw, 33vw"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "/placeholder.svg";
+                    }}
                   />
 
                   {/* Delete Button */}
@@ -481,6 +569,7 @@ export function PhotoUpload({
                     className="absolute top-2 right-2 h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={() => handleDeletePhoto(photo.id)}
                     disabled={deleteMutation.isPending}
+                    aria-label={`Delete ${photo.file_name || "photo"}`}
                   >
                     {deleteMutation.isPending ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -492,11 +581,13 @@ export function PhotoUpload({
 
                 <div className="mt-1">
                   <p className="text-xs text-gray-600 truncate">
-                    {photo.file_name}
+                    {photo.file_name || "Unnamed"}
                   </p>
-                  <p className="text-xs text-gray-400">
-                    {(photo.file_size / 1024 / 1024).toFixed(1)} MB
-                  </p>
+                  {photo.file_size && (
+                    <p className="text-xs text-gray-400">
+                      {(photo.file_size / 1024 / 1024).toFixed(1)} MB
+                    </p>
+                  )}
                 </div>
               </div>
             );
@@ -525,6 +616,20 @@ export function PhotoUpload({
             <p className="text-sm text-gray-500">No photos uploaded yet</p>
           </div>
         )}
+
+      {/* Add keyframe animation via style tag */}
+      <style jsx>{`
+        @keyframes scale-in {
+          from {
+            transform: scale(0);
+            opacity: 0;
+          }
+          to {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+      `}</style>
     </div>
   );
 }
