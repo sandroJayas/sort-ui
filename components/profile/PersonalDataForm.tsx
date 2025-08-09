@@ -139,9 +139,9 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({
                   className={cn(
                     "w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300",
                     isActive
-                      ? "bg-[#1742B1] text-white shadow-lg scale-110"
+                      ? "bg-blue-50 border border-blue-600 text-blue-600 shadow-lg scale-110"
                       : isComplete
-                        ? "bg-green-500 text-white"
+                        ? "bg-green-50 border border-green-600 text-green-600"
                         : "bg-[#F5F7FA] text-[#333333] border-2 border-gray-200",
                   )}
                 >

@@ -7,7 +7,6 @@ import PersonalDataForm from "@/components/profile/PersonalDataForm";
 import Container from "@/components/shared/Container";
 import {
   ChevronRight,
-  Home,
   User,
   ArrowLeft,
   Menu,
@@ -18,36 +17,6 @@ import {
 import { cn } from "@/lib/utils";
 
 // ============= Components =============
-interface BreadcrumbItem {
-  label: string;
-  href?: string;
-  icon?: React.ReactNode;
-}
-
-const Breadcrumbs: React.FC<{ items: BreadcrumbItem[] }> = ({ items }) => (
-  <nav aria-label="Breadcrumb" className="flex items-center space-x-2 text-sm">
-    {items.map((item, index) => (
-      <React.Fragment key={index}>
-        {index > 0 && <ChevronRight className="w-4 h-4 text-gray-400" />}
-        {item.href ? (
-          <a
-            href={item.href}
-            className="flex items-center gap-1.5 text-[#333333] hover:text-[#1742B1] transition-colors"
-          >
-            {item.icon}
-            <span>{item.label}</span>
-          </a>
-        ) : (
-          <span className="flex items-center gap-1.5 text-[#111111] font-medium">
-            {item.icon}
-            {item.label}
-          </span>
-        )}
-      </React.Fragment>
-    ))}
-  </nav>
-);
-
 interface PageHeaderProps {
   title: string;
   description: string;
@@ -146,16 +115,6 @@ export default function PersonalInformationPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const breadcrumbItems: BreadcrumbItem[] = [
-    {
-      label: "Dashboard",
-      href: "/dashboard",
-      icon: <Home className="w-3.5 h-3.5" />,
-    },
-    { label: "Profile", href: "/profile" },
-    { label: "Personal Information", icon: <User className="w-3.5 h-3.5" /> },
-  ];
-
   return (
     <div className="min-h-screen bg-[#F5F7FA]">
       <DashboardNavbar />
@@ -178,11 +137,9 @@ export default function PersonalInformationPage() {
       <Container className="py-8">
         {/* Breadcrumbs */}
         <div className="mb-6 flex items-center justify-between">
-          <Breadcrumbs items={breadcrumbItems} />
-
           {/* Back Button for Mobile */}
           <a
-            href="/dashboard"
+            href="/storage"
             className="md:hidden flex items-center gap-2 text-sm text-[#333333] hover:text-[#1742B1] transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
