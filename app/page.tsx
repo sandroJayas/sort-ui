@@ -302,9 +302,9 @@ export default function Home() {
 
           {/* Scroll Indicator */}
           <m.div
-            className="absolute bottom-8 left-6 sm:left-8 md:left-12"
-            animate={shouldReduceMotion || isMobile ? {} : { y: [0, 10, 0] }}
-            transition={{ repeat: Infinity, duration: 2 }}
+            className="absolute bottom-8 left-1/2 -translate-x-1/2"
+            animate={shouldReduceMotion ? {} : { y: [0, 10, 0] }}
+            transition={{ repeat: Infinity, duration: 1 }}
           >
             <div className="w-[1px] h-16 sm:h-20 bg-white/20" />
           </m.div>
