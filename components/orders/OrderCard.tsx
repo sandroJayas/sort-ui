@@ -366,14 +366,6 @@ const OrderCard: React.FC<OrderCardProps> = memo(({ order }) => {
       {/* Cancel Modal */}
       <Dialog open={showCancelModal} onOpenChange={handleCloseModal}>
         <DialogContent className="sm:max-w-md">
-          <button
-            onClick={handleCloseModal}
-            className="absolute right-4 top-4 p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all"
-            aria-label="Close dialog"
-          >
-            <X className="w-4 h-4" />
-          </button>
-
           <DialogHeader>
             <DialogTitle>Cancel Order</DialogTitle>
             <DialogDescription>
