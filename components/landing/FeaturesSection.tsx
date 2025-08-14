@@ -49,21 +49,21 @@ export default function FeaturesSection() {
   const shouldReduceMotion = useReducedMotion();
 
   return (
-    <section className="py-32 px-8 md:px-12">
+    <section className="py-32 px-8 md:px-12 bg-[#0F1A7D]">
       <m.div
         className="mb-20"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true, margin: "-100px" }}
       >
-        <h2 className="text-[8vw] md:text-[6vw] font-black tracking-tighter mb-4">
-          THE PROCESS
+        <h2 className="text-[8vw] md:text-[6vw] font-black tracking-tighter mb-4 text-white">
+          THE <span className="text-[#F8B24E]">PROCESS</span>
         </h2>
-        <div className="w-20 h-[2px] bg-white" />
+        <div className="w-20 h-[4px] bg-[#F8B24E]" />
       </m.div>
 
       <div className="space-y-32">
-        {features.map((feature) => (
+        {features.map((feature, index) => (
           <m.div
             key={feature.number}
             className={`grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 ${
@@ -84,17 +84,17 @@ export default function FeaturesSection() {
             <div
               className={`space-y-6 ${feature.align === "right" ? "md:order-2" : ""}`}
             >
-              <div className="text-gray-600 text-sm tracking-widest">
+              <div className="text-[#F8B24E] text-sm tracking-widest font-black">
                 {feature.number}
               </div>
-              <h3 className="text-4xl md:text-5xl font-black tracking-tighter">
+              <h3 className="text-4xl md:text-5xl font-black tracking-tighter text-white">
                 {feature.title}
               </h3>
-              <p className="text-lg font-light text-gray-400 leading-relaxed">
+              <p className="text-lg font-light text-white/80 leading-relaxed">
                 {feature.description}
               </p>
               <m.button
-                className="group flex items-center gap-2 text-sm tracking-wider"
+                className="group flex items-center gap-2 text-sm tracking-wider text-[#F8B24E] font-bold"
                 whileHover={shouldReduceMotion ? {} : { x: 10 }}
               >
                 <span>LEARN MORE</span>
@@ -107,7 +107,11 @@ export default function FeaturesSection() {
               }`}
             >
               <m.div
-                className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20 z-10"
+                className={`absolute inset-0 ${
+                  index % 2 === 0
+                    ? "bg-gradient-to-br from-[#F8B24E]/40 to-[#F5A02C]/40"
+                    : "bg-gradient-to-br from-[#1724B6]/40 to-[#2E3AC8]/40"
+                } z-10`}
                 whileHover={shouldReduceMotion ? {} : { scale: 1.05 }}
                 transition={{ duration: 0.3 }}
               />
@@ -120,7 +124,7 @@ export default function FeaturesSection() {
                 loading="lazy"
                 quality={75}
               />
-              <div className="absolute -bottom-4 -right-4 w-full h-full border border-white/20 z-0" />
+              <div className="absolute -bottom-4 -right-4 w-full h-full border-2 border-[#F8B24E] z-0" />
             </div>
           </m.div>
         ))}
