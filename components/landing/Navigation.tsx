@@ -1,8 +1,9 @@
 "use client";
 
+import { memo } from "react";
 import { signIn } from "next-auth/react";
 
-export function Navigation() {
+export const NavigationBar = memo(function NavigationBar() {
   return (
     <nav
       aria-label="Primary"
@@ -21,4 +22,4 @@ export function Navigation() {
       </div>
     </nav>
   );
-}
+});

@@ -1,4 +1,3 @@
-// Server Component - No "use client"!
 import { Metadata } from "next";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { StatsSection } from "@/components/landing/StatsSection";
@@ -7,19 +6,19 @@ import { PricingSection } from "@/components/landing/PricingSection";
 import { NYCSection } from "@/components/landing/NYCSection";
 import { FinalCTA } from "@/components/landing/FinalCTA";
 import { Footer } from "@/components/landing/Footer";
-import { Navigation } from "@/components/landing/Navigation";
+import { NavigationBar } from "@/components/landing/Navigation";
 import { SchemaMarkup } from "@/components/landing/SchemaMarkup";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://sort.storage"),
   title: "Sort - Infinite Space for Your Tiny NYC Apartment | 2-Hour Delivery",
   description:
-    "NYC-exclusive storage solution with 2-hour Manhattan delivery. Store your belongings with flexible pickup and delivery options. Starting at $55/month.",
+    "NYC-exclusive storage solution. Military-grade boxes, 2-hour Manhattan delivery, climate-controlled facilities. Store your belongings for $55/month. First month free.",
   keywords:
-    "NYC storage, Manhattan storage, Brooklyn storage, Queens storage, box storage, on-demand storage, apartment storage, self storage NYC",
-  authors: [{ name: "Sort Storage" }],
-  creator: "Sort",
-  publisher: "Sort",
+    "NYC storage, Manhattan storage, Brooklyn storage, Queens storage, box storage, on-demand storage, apartment storage, self storage NYC, storage unit NYC",
+  authors: [{ name: "Sort" }],
+  creator: "Sort Storage",
+  publisher: "Sort Storage",
   robots: {
     index: true,
     follow: true,
@@ -38,7 +37,7 @@ export const metadata: Metadata = {
     siteName: "Sort Storage",
     title: "Sort - Infinite Space for Your Tiny NYC Apartment",
     description:
-      "The spatial revolution your 400sq ft needs. 2-hour delivery in Manhattan.",
+      "The spatial revolution your 400sq ft needs. 2-hour delivery in Manhattan. $55/month.",
     images: [
       {
         url: "/og-image.jpg",
@@ -52,9 +51,10 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Sort - NYC Storage Solutions",
     description:
-      "Premium storage for NYC apartments. $55/month, 2-hour Manhattan delivery.",
-    images: ["/og-image.jpg"],
+      "Store your belongings with 2-hour Manhattan delivery. $55/month.",
+    site: "@sortstorage",
     creator: "@sortstorage",
+    images: ["/og-image.jpg"],
   },
   alternates: {
     canonical: "https://sort.storage",
@@ -69,7 +69,7 @@ export default function Home() {
     <>
       <SchemaMarkup />
       <main className="bg-[#0F1A7D] text-white overflow-x-hidden">
-        <Navigation />
+        <NavigationBar />
         <HeroSection />
         <StatsSection />
         <FeaturesSection />

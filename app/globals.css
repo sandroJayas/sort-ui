@@ -138,308 +138,6 @@
   }
 }
 
-/* ============================================
-   LANDING PAGE PERFORMANCE ANIMATIONS
-   ============================================ */
-
-/* Fade animations */
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fade-down {
-  from {
-    opacity: 0;
-    transform: translateY(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Slide animations */
-@keyframes slide-in-left {
-  from {
-    opacity: 0;
-    transform: translateX(-100px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slide-in-right {
-  from {
-    opacity: 0;
-    transform: translateX(100px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slide-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(100px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Scale animations */
-@keyframes scale-in {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes scale-up {
-  from {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* Bounce animation for scroll indicator */
-@keyframes bounce-slow {
-  0%, 100% {
-    transform: translate(-50%, 0);
-  }
-  50% {
-    transform: translate(-50%, 10px);
-  }
-}
-
-/* Pulse for live indicators */
-@keyframes pulse-subtle {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-/* Swiss brutal entrance */
-@keyframes brutal-entrance {
-  from {
-    opacity: 0;
-    transform: translateX(-50px) translateY(50px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0) translateY(0);
-  }
-}
-
-/* Landing Page Animation Classes */
-.animate-fade-in {
-  animation: fade-in 0.6s ease-out forwards;
-}
-
-.animate-fade-up {
-  animation: fade-up 0.6s ease-out forwards;
-  opacity: 0;
-}
-
-.animate-fade-down {
-  animation: fade-down 0.6s ease-out forwards;
-  opacity: 0;
-}
-
-.animate-fade-up-delay {
-  animation: fade-up 0.6s ease-out 0.8s forwards;
-  opacity: 0;
-}
-
-.animate-slide-in-left {
-  animation: slide-in-left 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  opacity: 0;
-}
-
-.animate-slide-in-right {
-  animation: slide-in-right 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  opacity: 0;
-}
-
-.animate-slide-in-up {
-  animation: slide-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  opacity: 0;
-}
-
-.animate-scale-in {
-  animation: scale-in 0.6s ease-out forwards;
-  opacity: 0;
-}
-
-.animate-scale-up {
-  animation: scale-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  opacity: 0;
-}
-
-.animate-bounce-slow {
-  animation: bounce-slow 2s ease-in-out infinite;
-}
-
-.animate-pulse-subtle {
-  animation: pulse-subtle 2s ease-in-out infinite;
-}
-
-.animate-brutal-entrance {
-  animation: brutal-entrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Staggered animations */
-.animate-stagger-1 {
-  animation-delay: 100ms;
-}
-
-.animate-stagger-2 {
-  animation-delay: 200ms;
-}
-
-.animate-stagger-3 {
-  animation-delay: 300ms;
-}
-
-.animate-stagger-4 {
-  animation-delay: 400ms;
-}
-
-.animate-stagger-5 {
-  animation-delay: 500ms;
-}
-
-/* Scroll-triggered animations */
-.animate-on-scroll {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.animate-on-scroll.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.animate-on-scroll-left {
-  opacity: 0;
-  transform: translateX(-50px);
-  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.animate-on-scroll-left.visible {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-.animate-on-scroll-right {
-  opacity: 0;
-  transform: translateX(50px);
-  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.animate-on-scroll-right.visible {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-.animate-on-scroll-scale {
-  opacity: 0;
-  transform: scale(0.9);
-  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.animate-on-scroll-scale.visible {
-  opacity: 1;
-  transform: scale(1);
-}
-
-/* Special animations for slide-left and slide-right classes */
-.animate-slide-left {
-  animation: slide-in-left 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  opacity: 0;
-}
-
-.animate-slide-right {
-  animation: slide-in-right 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  opacity: 0;
-}
-
-/* Performance optimizations */
-.will-change-transform {
-  will-change: transform;
-}
-
-.will-change-opacity {
-  will-change: opacity;
-}
-
-.transform-gpu {
-  transform: translateZ(0);
-  will-change: transform;
-}
-
-/* Reduce motion for accessibility */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-
-  .animate-on-scroll,
-  .animate-on-scroll-left,
-  .animate-on-scroll-right,
-  .animate-on-scroll-scale {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
-
-  .animate-bounce-slow {
-    animation: none;
-  }
-
-  .animate-pulse,
-  .animate-pulse-subtle {
-    animation: none;
-  }
-}
 
 /* ============================================
    AGGRESSIVE SWISS DESIGN UTILITIES
@@ -675,4 +373,65 @@
     background: white;
     color: black;
   }
+}
+
+
+
+/* Scroll-triggered animations */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(10px); }
+}
+
+.animate-on-scroll {
+  opacity: 0;
+  animation: fade-up 0.6s ease-out forwards paused;
+}
+
+.animate-on-scroll.visible {
+  animation-play-state: running;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+/* Performance optimizations */
+.transform-gpu {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Font optimization */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
 }

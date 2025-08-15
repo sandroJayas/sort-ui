@@ -3,35 +3,31 @@ export function SchemaMarkup() {
     "@context": "https://schema.org",
     "@type": "MovingCompany",
     name: "Sort Storage",
-    description:
-      "On-demand storage service for NYC apartments with 2-hour delivery",
+    description: "On-demand storage service for NYC apartments",
     url: "https://sort.storage",
     logo: "https://sort.storage/logo.png",
+    priceRange: "$55/month",
+    areaServed: [
+      {
+        "@type": "City",
+        name: "New York City",
+      },
+    ],
     address: {
       "@type": "PostalAddress",
       addressLocality: "New York",
       addressRegion: "NY",
       addressCountry: "US",
     },
-    priceRange: "$55/month",
-    areaServed: [
-      {
-        "@type": "City",
-        name: "Manhattan",
-      },
-      {
-        "@type": "City",
-        name: "Brooklyn",
-      },
-      {
-        "@type": "City",
-        name: "Queens",
-      },
+    sameAs: [
+      "https://twitter.com/sortstorage",
+      "https://instagram.com/sortstorage",
     ],
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "4.8",
-      reviewCount: "1247",
+    offers: {
+      "@type": "Offer",
+      description: "Storage boxes with pickup and delivery",
+      price: "55.00",
+      priceCurrency: "USD",
     },
   };
 

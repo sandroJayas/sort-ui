@@ -1,6 +1,6 @@
 import Image from "next/image";
-import { PricingCTA } from "./PricingCTA";
 import { ScrollAnimator } from "./ScrollAnimator";
+import { PricingCTA } from "@/components/landing/PricingCTA";
 
 const pricingFeatures = [
   "Unlimited boxes",
@@ -18,7 +18,7 @@ export function PricingSection() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
           <div>
             <ScrollAnimator>
-              <h2 className="text-[10vw] md:text-[8vw] font-black tracking-tighter leading-[0.8] mb-8">
+              <h2 className="text-[10vw] md:text-[8vw] font-black tracking-tighter leading-[0.8] mb-8 animate-on-scroll">
                 <span className="text-[#1724B6]">SIMPLE</span>
                 <br />
                 <span className="text-[#F8B24E]">PRICING</span>
@@ -31,11 +31,12 @@ export function PricingSection() {
                 <span className="text-2xl text-[#718096]">.00/mo</span>
               </div>
 
-              <div className="space-y-4">
-                {pricingFeatures.map((item, i) => (
-                  <ScrollAnimator key={item}>
+              <ScrollAnimator>
+                <div className="space-y-4">
+                  {pricingFeatures.map((item, i) => (
                     <div
-                      className="flex items-center gap-4 animate-slide-in-left"
+                      key={item}
+                      className="flex items-center gap-4 animate-on-scroll"
                       style={{ animationDelay: `${i * 50}ms` }}
                     >
                       <div className="w-8 h-[3px] bg-[#F8B24E]" />
@@ -43,9 +44,9 @@ export function PricingSection() {
                         {item}
                       </span>
                     </div>
-                  </ScrollAnimator>
-                ))}
-              </div>
+                  ))}
+                </div>
+              </ScrollAnimator>
 
               <PricingCTA />
             </div>
@@ -54,7 +55,7 @@ export function PricingSection() {
           <div className="relative h-[600px] md:h-auto">
             <div className="absolute inset-0 bg-[#1724B6] z-0" />
             <Image
-              src="/images/storage-unit.webp"
+              src="/images/storage-box.webp"
               alt="Storage"
               fill
               className="object-cover mix-blend-luminosity opacity-60"

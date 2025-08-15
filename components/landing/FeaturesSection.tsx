@@ -1,4 +1,3 @@
-// Server Component with minimal client interaction
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { ScrollAnimator } from "./ScrollAnimator";
@@ -9,7 +8,7 @@ const features = [
     title: "BOXES ARRIVE",
     description:
       "Military-grade storage containers delivered to your door. We navigate your walk-up.",
-    image: "/images/boxes-arrive.webp",
+    image: "/images/feature-1.webp",
     align: "left",
   },
   {
@@ -17,7 +16,7 @@ const features = [
     title: "YOU PACK",
     description:
       "That winter coat, old yearbooks, the exercise equipment. Pack it all.",
-    image: "/images/you-pack.webp",
+    image: "/images/feature-2.webp",
     align: "right",
   },
   {
@@ -25,7 +24,7 @@ const features = [
     title: "WE COLLECT",
     description:
       "Our crew handles everything. Stairs, doormen, that narrow hallway.",
-    image: "/images/we-collect.webp",
+    image: "/images/feature-3.webp",
     align: "left",
   },
   {
@@ -33,7 +32,7 @@ const features = [
     title: "INSTANT ACCESS",
     description:
       "Need it back? 2-hour delivery in Manhattan. Because NYC doesn't wait.",
-    image: "/images/instant-access.webp",
+    image: "/images/feature-4.webp",
     align: "right",
   },
 ];
@@ -42,7 +41,7 @@ export function FeaturesSection() {
   return (
     <section className="py-32 px-8 md:px-12 bg-[#0F1A7D]">
       <ScrollAnimator>
-        <div className="mb-20">
+        <div className="mb-20 animate-on-scroll">
           <h2 className="text-[8vw] md:text-[6vw] font-black tracking-tighter mb-4 text-white">
             THE <span className="text-[#F8B24E]">PROCESS</span>
           </h2>
@@ -54,9 +53,16 @@ export function FeaturesSection() {
         {features.map((feature, index) => (
           <ScrollAnimator key={feature.number}>
             <div
-              className={`grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 ${
+              className={`grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 animate-on-scroll ${
                 feature.align === "right" ? "md:ml-[20%]" : "md:mr-[20%]"
-              } animate-slide-${feature.align}`}
+              }`}
+              style={
+                {
+                  animationDelay: `${index * 100}ms`,
+                  "--slide-from":
+                    feature.align === "right" ? "100px" : "-100px",
+                } as React.CSSProperties
+              }
             >
               <div
                 className={`space-y-6 ${feature.align === "right" ? "md:order-2" : ""}`}

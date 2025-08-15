@@ -5,13 +5,11 @@ import { Providers } from "@/app/providers";
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/react";
 
-// Optimize font loading
 const inter = Inter({
   subsets: ["latin"],
-  display: "swap", // Prevents FOIT
+  display: "swap",
   variable: "--font-inter",
   preload: true,
-  fallback: ["system-ui", "arial"],
 });
 
 export const metadata: Metadata = {
@@ -19,7 +17,8 @@ export const metadata: Metadata = {
     default: "Sort - NYC Storage Solutions",
     template: "%s | Sort Storage",
   },
-  description: "Premium storage solution for NYC apartments",
+  description:
+    "Premium storage for NYC apartments. $55/month, 2-hour Manhattan delivery.",
 };
 
 export default function RootLayout({
@@ -29,7 +28,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={inter.variable}>
-      <body className="font-sans antialiased">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+      </head>
+      <body className="font-sans">
         <Providers>{children}</Providers>
         <Toaster />
         <Analytics />

@@ -21,14 +21,12 @@ export function FinalCTA() {
       </div>
 
       <div className="relative z-10 text-center px-6 sm:px-8">
-        <div className="animate-on-scroll">
-          <h2 className="text-[12vw] sm:text-[10vw] md:text-[8vw] font-black tracking-tighter leading-[0.8] mb-6 sm:mb-8 text-[#0F1A7D]">
-            YOUR SPACE
-            <br />
-            <span className="text-white drop-shadow-[0_10px_30px_rgba(255,255,255,0.5)]">
-              AWAITS
-            </span>
-          </h2>
+        <div className="text-[12vw] sm:text-[10vw] md:text-[8vw] font-black tracking-tighter leading-[0.8] mb-6 sm:mb-8 text-[#0F1A7D]">
+          YOUR SPACE
+          <br />
+          <span className="text-white drop-shadow-[0_10px_30px_rgba(255,255,255,0.5)]">
+            AWAITS
+          </span>
         </div>
 
         <div className="animate-fade-up-delay">

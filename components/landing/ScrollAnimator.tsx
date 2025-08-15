@@ -1,33 +1,41 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, ReactNode } from "react";
+
+interface ScrollAnimatorProps {
+  children: ReactNode;
+  threshold?: number;
+}
 
 export function ScrollAnimator({
   children,
-  className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
+  threshold = 0.1,
+}: ScrollAnimatorProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("visible");
-        }
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const elements =
+              entry.target.querySelectorAll(".animate-on-scroll");
+            elements.forEach((el) => {
+              el.classList.add("visible");
+            });
+            observer.unobserve(entry.target);
+          }
+        });
       },
-      { threshold: 0.1, rootMargin: "-50px" },
+      { threshold },
     );
 
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
 
-  return (
-    <div ref={ref} className={`animate-on-scroll ${className}`}>
-      {children}
-    </div>
-  );
+    return () => observer.disconnect();
+  }, [threshold]);
+
+  return <div ref={ref}>{children}</div>;
 }
