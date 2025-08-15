@@ -32,7 +32,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
       </head>
-      <body className="font-sans">
+      <body>
         <Providers>{children}</Providers>
         <Toaster />
         <Analytics />

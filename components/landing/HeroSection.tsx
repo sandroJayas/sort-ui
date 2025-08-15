@@ -94,7 +94,7 @@ export function HeroSection() {
               <div className="flex flex-wrap gap-4 sm:gap-8 mt-5 sm:mt-6 text-xs sm:text-sm text-[#FBC774] font-bold">
                 <span>$55.00/mo</span>
                 <span className="text-white/30">•</span>
-                <span>2hr delivery</span>
+                <span>5&#39;x 5&#39; storage</span>
                 <span className="text-white/30">•</span>
                 <span>Cancel anytime</span>
               </div>

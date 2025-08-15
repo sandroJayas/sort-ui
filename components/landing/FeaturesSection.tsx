@@ -5,33 +5,33 @@ import { ScrollAnimator } from "./ScrollAnimator";
 const features = [
   {
     number: "001",
-    title: "BOXES ARRIVE",
+    title: "BOXES DELIVERED",
     description:
-      "Military-grade storage containers delivered to your door. We navigate your walk-up.",
+      "Need containers? We'll deliver sturdy boxes right to your door—even to your 5th floor walk-up.",
     image: "/images/feature-1.webp",
     align: "left",
   },
   {
     number: "002",
-    title: "YOU PACK",
+    title: "PACK YOUR WAY",
     description:
-      "That winter coat, old yearbooks, the exercise equipment. Pack it all.",
+      "Winter gear, memorabilia, furniture—pack what you want, when you want.",
     image: "/images/feature-2.webp",
     align: "right",
   },
   {
     number: "003",
-    title: "WE COLLECT",
+    title: "FLEXIBLE PICKUP",
     description:
-      "Our crew handles everything. Stairs, doormen, that narrow hallway.",
+      "Drop it off yourself or we'll pick it up. You choose what works for you.",
     image: "/images/feature-3.webp",
     align: "left",
   },
   {
     number: "004",
-    title: "INSTANT ACCESS",
+    title: "INSTANT RETRIEVAL",
     description:
-      "Need it back? 2-hour delivery in Manhattan. Because NYC doesn't wait.",
+      "Need something back? Schedule a return and we'll deliver it to your door. Always free.",
     image: "/images/feature-4.webp",
     align: "right",
   },

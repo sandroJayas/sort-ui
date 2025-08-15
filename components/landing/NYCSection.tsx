@@ -2,8 +2,8 @@ import { ScrollAnimator } from "./ScrollAnimator";
 
 const boroughs = [
   { name: "MANHATTAN", status: "LIVE", time: "2HR DELIVERY" },
-  { name: "BROOKLYN", status: "LIVE", time: "4HR DELIVERY" },
-  { name: "QUEENS", status: "LIVE", time: "NEXT DAY" },
+  { name: "BROOKLYN", status: "LIVE", time: "3HR DELIVERY" },
+  { name: "QUEENS", status: "LIVE", time: "2HR DELIVERY" },
 ];
 
 export function NYCSection() {

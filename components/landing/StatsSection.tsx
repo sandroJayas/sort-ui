@@ -1,9 +1,9 @@
 import { ScrollAnimator } from "./ScrollAnimator";
 
 const stats = [
-  { value: "10K", label: "NYC UNITS", suffix: "+", color: "#1724B6" },
-  { value: "2", label: "HOUR DELIVERY", suffix: "HR", color: "#F8B24E" },
-  { value: "99", label: "UPTIME", suffix: "%", color: "#1724B6" },
+  { value: "$55", label: "SIMPLE PRICING", suffix: "/mo", color: "#1724B6" },
+  { value: "UNLIMITED", label: "FREE RETURNS", suffix: "", color: "#F8B24E" },
+  { value: "24", label: "CUSTOMER SUPPORT", suffix: "HR", color: "#1724B6" },
 ];
 
 export function StatsSection() {
@@ -19,7 +19,7 @@ export function StatsSection() {
                 className="relative animate-on-scroll"
                 style={{ animationDelay: `${i * 100}ms` }}
               >
-                <div className="flex items-baseline gap-2">
+                <div className="flex items-baseline gap-2 justify-center">
                   <span
                     className="text-[8vw] md:text-[6vw] font-black tracking-tighter"
                     style={{ color: stat.color }}
