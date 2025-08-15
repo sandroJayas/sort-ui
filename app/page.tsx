@@ -1,14 +1,15 @@
-// page.tsx - Optimized Landing Page with Performance Fixes
+// page.tsx - Swiss-style Landing — perf & stability polish
 "use client";
 
 import {
-  useRef,
   useEffect,
   useState,
   useCallback,
   lazy,
   Suspense,
   memo,
+  useRef,
+  useMemo,
 } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -28,7 +29,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { signIn } from "next-auth/react";
 
-// Lazy load heavy sections with better error boundaries
+// ——— Lazy sections (with safe fallbacks)
 const StatsSection = lazy(() =>
   import("@/components/landing/StatsSection").catch(() => ({
     default: () => <div className="h-96 bg-[#1724B6]" />,
@@ -45,10 +46,13 @@ const PricingSection = lazy(() =>
   })),
 );
 
-// Memoized components to prevent re-renders
+// ——— Static memoized parts
 const Navigation = memo(function Navigation() {
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 mix-blend-difference">
+    <nav
+      aria-label="Primary"
+      className="fixed top-0 left-0 w-full z-50 mix-blend-difference"
+    >
       <div className="flex justify-between items-center p-6 sm:p-8 md:p-12">
         <div className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tighter text-white">
           SORT
@@ -74,6 +78,7 @@ const ScrollIndicator = memo(function ScrollIndicator({
       className="absolute bottom-8 left-1/2 -translate-x-1/2 pointer-events-none"
       animate={shouldReduceMotion ? {} : { y: [0, 10, 0] }}
       transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+      aria-hidden
     >
       <div className="w-[2px] h-16 sm:h-20 bg-[#F8B24E]" />
     </m.div>
@@ -81,62 +86,57 @@ const ScrollIndicator = memo(function ScrollIndicator({
 });
 
 export default function Home() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const heroRef = useRef<HTMLDivElement>(null);
   const shouldReduceMotion = useReducedMotion();
   const [isClient, setIsClient] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isMounted = useRef(true);
 
+  // viewport scroll value
   const { scrollY } = useScroll();
 
-  // Detect mobile and client-side rendering
+  // ——— Mount + responsive detection (no passive flag on resize)
   useEffect(() => {
     setIsClient(true);
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
 
-    // Use passive listener for better scroll performance
-    window.addEventListener("resize", checkMobile, { passive: true });
-    return () => window.removeEventListener("resize", checkMobile);
+    window.addEventListener("resize", checkMobile);
+    return () => {
+      window.removeEventListener("resize", checkMobile);
+    };
   }, []);
 
-  // Optimized scroll transforms with will-change
+  // ——— Reduced-motion aware transforms (kept subtle)
   const heroY = useTransform(
     scrollY,
     [0, 1000],
-    shouldReduceMotion || isMobile ? [0, 0] : [0, -150],
+    shouldReduceMotion || isMobile ? [0, 0] : [0, -120],
     { clamp: true },
   );
-
   const heroScale = useTransform(
     scrollY,
     [0, 500],
-    shouldReduceMotion || isMobile ? [1, 1] : [1, 0.95],
+    shouldReduceMotion || isMobile ? [1, 1] : [1, 0.97],
     { clamp: true },
   );
 
-  // Mouse tracking with performance optimizations
+  // ——— Pointer parallax (RAF throttled)
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
-  const smoothMouseX = useSpring(mouseX, { stiffness: 25, damping: 30 });
-  const smoothMouseY = useSpring(mouseY, { stiffness: 25, damping: 30 });
+  const smoothMouseX = useSpring(mouseX, { stiffness: 30, damping: 25 });
+  const smoothMouseY = useSpring(mouseY, { stiffness: 30, damping: 25 });
 
-  // Optimized mouse handler with RAF
   const rafRef = useRef<number>(0);
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
       if (shouldReduceMotion || isMobile) return;
-
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
-
       rafRef.current = requestAnimationFrame(() => {
         const { clientX, clientY } = e;
         const { innerWidth, innerHeight } = window;
-        mouseX.set((clientX / innerWidth - 0.5) * 15); // Reduced range for subtlety
+        mouseX.set((clientX / innerWidth - 0.5) * 15);
         mouseY.set((clientY / innerHeight - 0.5) * 15);
       });
     },
@@ -144,16 +144,18 @@ export default function Home() {
   );
 
   useEffect(() => {
+    isMounted.current = true;
     if (!shouldReduceMotion && !isMobile && isClient) {
-      window.addEventListener("mousemove", handleMouseMove, { passive: true });
-      return () => {
-        window.removeEventListener("mousemove", handleMouseMove);
-        if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      };
+      window.addEventListener("mousemove", handleMouseMove);
     }
+    return () => {
+      isMounted.current = false;
+      window.removeEventListener("mousemove", handleMouseMove);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
   }, [handleMouseMove, shouldReduceMotion, isMobile, isClient]);
 
-  // Enhanced form submission with proper error handling
+  // ——— Email submit (with abort + safe state updates)
   const handleSubmit = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
@@ -161,58 +163,66 @@ export default function Home() {
       setIsSubmitting(true);
 
       const formData = new FormData(e.currentTarget);
-      const email = formData.get("email") as string;
+      const email = (formData.get("email") as string)?.trim();
 
-      if (!email || !email.includes("@")) {
+      // modest but safer validation than just "@"
+      const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email || "");
+      if (!emailOk) {
         setEmailError("Please enter a valid email address");
         setIsSubmitting(false);
         return;
       }
 
+      const controller = new AbortController();
       try {
         const response = await fetch("/api/auth/signup", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email }),
+          signal: controller.signal,
         });
 
-        if (!response.ok) {
-          throw new Error("Failed to initiate signup");
-        }
+        if (!response.ok) throw new Error("Failed to initiate signup");
 
-        const { authUrl } = await response.json();
-        window.location.href = authUrl;
-      } catch (error) {
-        console.error("Signup error:", error);
+        const data: { authUrl?: string } = await response
+          .json()
+          .catch(() => ({}));
+        if (data?.authUrl) {
+          window.location.href = data.authUrl;
+        } else {
+          throw new Error("Malformed response");
+        }
+      } catch (err) {
+        console.error("Signup error:", err);
         setEmailError("Something went wrong. Please try again.");
       } finally {
-        setIsSubmitting(false);
+        if (isMounted.current) setIsSubmitting(false);
       }
     },
     [],
   );
 
+  const boroughs = useMemo(
+    () => [
+      { name: "MANHATTAN", status: "LIVE", time: "2HR DELIVERY" },
+      { name: "BROOKLYN", status: "LIVE", time: "4HR DELIVERY" },
+      { name: "QUEENS", status: "LIVE", time: "NEXT DAY" },
+    ],
+    [],
+  );
+
   return (
     <LazyMotion features={domAnimation} strict>
-      <div
-        ref={containerRef}
-        className="bg-[#0F1A7D] text-white overflow-x-hidden"
-      >
+      <main className="bg-[#0F1A7D] text-white overflow-x-hidden">
         <Navigation />
 
-        {/* Hero Section - Optimized animations */}
-        <section
-          ref={heroRef}
-          className="relative min-h-[100svh] flex items-center overflow-hidden bg-gradient-to-br from-[#1724B6] to-[#0F1A7D]"
-        >
-          {/* Optimized background with lazy loading */}
+        {/* ——— Hero */}
+        <section className="relative min-h-[100svh] flex items-center overflow-hidden bg-gradient-to-br from-[#1724B6] to-[#0F1A7D]">
+          {/* animated background */}
           {isClient && (
             <m.div
               className="absolute -right-1/4 top-0 w-[150%] h-full will-change-transform"
-              style={{
-                y: heroY,
-                scale: heroScale,
-              }}
+              style={{ y: heroY, scale: heroScale }}
             >
               <div className="relative w-full h-full">
                 <div className="absolute inset-0 bg-[#F8B24E] opacity-10 mix-blend-multiply" />
@@ -239,7 +249,7 @@ export default function Home() {
                 animate={{ opacity: 1 }}
                 transition={{ duration: shouldReduceMotion ? 0 : 0.6 }}
               >
-                {/* Floating Badge */}
+                {/* badge */}
                 <m.div
                   className="inline-block mb-6 sm:mb-8"
                   style={
@@ -255,15 +265,15 @@ export default function Home() {
                   </div>
                 </m.div>
 
-                {/* Typography with staggered animation */}
+                {/* typography */}
                 <div className="relative">
                   <m.h1
                     className="text-[14vw] sm:text-[12vw] md:text-[10vw] font-black leading-[0.8] tracking-tighter mb-6 sm:mb-8 text-white transform-gpu"
                     initial={{ x: -100, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{
-                      duration: shouldReduceMotion ? 0 : 0.6,
-                      ease: "easeOut",
+                      duration: shouldReduceMotion ? 0 : 0.8,
+                      delay: 0.2,
                     }}
                   >
                     INFINITE
@@ -274,21 +284,20 @@ export default function Home() {
                     initial={{ x: 200, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{
-                      duration: shouldReduceMotion ? 0 : 0.6,
-                      delay: 0.1,
-                      ease: "easeOut",
+                      duration: shouldReduceMotion ? 0 : 0.8,
+                      delay: 0.3,
                     }}
                   >
-                    <h1 className="text-[14vw] sm:text-[12vw] md:text-[10vw] font-black leading-[0.8] tracking-tighter text-[#F8B24E] mb-10 sm:mb-12 text-right pr-6 sm:pr-8 md:pr-12 drop-shadow-[0_10px_20px_rgba(248,178,78,0.3)]">
+                    <h2 className="text-[14vw] sm:text-[12vw] md:text-[10vw] font-black leading-[0.8] tracking-tighter text-[#F8B24E] mb-10 sm:mb-12 text-right pr-6 sm:pr-8 md:pr-12 drop-shadow-[0_10px_20px_rgba(248,178,78,0.3)]">
                       SPACE
-                    </h1>
+                    </h2>
                   </m.div>
 
                   <m.div
                     className="absolute -top-2 sm:-top-4 right-0 sm:right-[10%] md:right-[20%] text-[10px] sm:text-sm font-black"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: shouldReduceMotion ? 0 : 0.4 }}
+                    transition={{ delay: shouldReduceMotion ? 0 : 0.8 }}
                   >
                     <div className="flex items-center gap-1 sm:gap-2">
                       <div className="w-8 sm:w-12 h-[2px] bg-[#F8B24E]" />
@@ -299,12 +308,12 @@ export default function Home() {
                   </m.div>
                 </div>
 
-                {/* Subtext Grid */}
+                {/* subtext */}
                 <m.div
                   className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mt-16 sm:mt-20 max-w-5xl"
                   initial={{ opacity: 0, y: 40 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: shouldReduceMotion ? 0 : 0.3 }}
+                  transition={{ delay: shouldReduceMotion ? 0 : 0.6 }}
                 >
                   <div className="md:col-span-2">
                     <p className="text-lg sm:text-xl md:text-2xl font-light leading-relaxed text-white/90">
@@ -334,12 +343,12 @@ export default function Home() {
                   </div>
                 </m.div>
 
-                {/* CTA Section with error handling */}
+                {/* CTA */}
                 <m.div
                   className="mt-16 sm:mt-20 md:ml-[15%]"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: shouldReduceMotion ? 0 : 0.5 }}
+                  transition={{ delay: shouldReduceMotion ? 0 : 0.8 }}
                 >
                   <form
                     onSubmit={handleSubmit}
@@ -353,10 +362,15 @@ export default function Home() {
                         className="w-full h-14 sm:h-16 bg-white/10 border-2 border-white/20 text-white placeholder:text-white/50 text-base sm:text-lg font-bold focus:border-[#F8B24E] transition-colors"
                         required
                         disabled={isSubmitting}
+                        aria-invalid={!!emailError}
+                        aria-describedby={
+                          emailError ? "email-error" : undefined
+                        }
                       />
                       <AnimatePresence>
                         {emailError && (
                           <m.p
+                            id="email-error"
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0 }}
@@ -391,29 +405,25 @@ export default function Home() {
             </div>
           </div>
 
-          <ScrollIndicator
-            shouldReduceMotion={shouldReduceMotion || isMobile}
-          />
+          <ScrollIndicator shouldReduceMotion={shouldReduceMotion ?? false} />
         </section>
 
-        {/* Lazy loaded sections with loading states */}
+        {/* ——— Lazy sections */}
         <Suspense
           fallback={<div className="h-96 bg-[#1724B6] animate-pulse" />}
         >
           <StatsSection />
         </Suspense>
-
         <Suspense
           fallback={<div className="h-96 bg-[#0F1A7D] animate-pulse" />}
         >
           <FeaturesSection />
         </Suspense>
-
         <Suspense fallback={<div className="h-96 bg-white animate-pulse" />}>
           <PricingSection />
         </Suspense>
 
-        {/* NYC Section - Optimized animations */}
+        {/* ——— NYC tiles */}
         <section className="py-24 sm:py-32 px-6 sm:px-8 md:px-12 bg-[#1724B6]">
           <m.div
             initial={{ opacity: 0 }}
@@ -431,13 +441,9 @@ export default function Home() {
           </m.div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
-            {[
-              { name: "MANHATTAN", status: "LIVE", time: "2HR DELIVERY" },
-              { name: "BROOKLYN", status: "LIVE", time: "4HR DELIVERY" },
-              { name: "QUEENS", status: "LIVE", time: "NEXT DAY" },
-            ].map((borough, i) => (
+            {boroughs.map((b, i) => (
               <m.div
-                key={borough.name}
+                key={b.name}
                 className="relative group"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -452,14 +458,14 @@ export default function Home() {
                   <div className="flex items-center gap-2 mb-3 sm:mb-4">
                     <div className="w-3 h-3 bg-[#10B981] group-hover:bg-[#0F1A7D] animate-pulse" />
                     <span className="text-[10px] sm:text-xs tracking-widest text-[#10B981] group-hover:text-[#0F1A7D] font-black">
-                      {borough.status}
+                      {b.status}
                     </span>
                   </div>
                   <h3 className="text-2xl sm:text-3xl font-black tracking-tighter mb-1 sm:mb-2">
-                    {borough.name}
+                    {b.name}
                   </h3>
                   <p className="text-xs sm:text-sm text-white/70 group-hover:text-[#0F1A7D]/70 font-bold">
-                    {borough.time}
+                    {b.time}
                   </p>
                 </div>
               </m.div>
@@ -467,7 +473,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Final CTA - Optimized with lazy image */}
+        {/* ——— Final CTA */}
         <section className="min-h-[100svh] flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-[#F8B24E] to-[#F5A02C]">
           <div className="absolute inset-0">
             <div className="absolute inset-0 bg-[#0F1A7D] opacity-10" />
@@ -486,30 +492,15 @@ export default function Home() {
           </div>
 
           <div className="relative z-10 text-center px-6 sm:px-8">
-            <m.h2
-              className="text-[12vw] sm:text-[10vw] md:text-[8vw] font-black tracking-tighter leading-[0.8] mb-6 sm:mb-8 text-[#0F1A7D]"
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{
-                duration: shouldReduceMotion || isMobile ? 0 : 0.5,
-              }}
-              viewport={{ once: true }}
-            >
+            <div className="text-[12vw] sm:text-[10vw] md:text-[8vw] font-black tracking-tighter leading-[0.8] mb-6 sm:mb-8 text-[#0F1A7D]">
               YOUR SPACE
               <br />
               <span className="text-white drop-shadow-[0_10px_30px_rgba(255,255,255,0.5)]">
                 AWAITS
               </span>
-            </m.h2>
+            </div>
 
-            <m.form
-              onSubmit={handleSubmit}
-              className="max-w-md mx-auto"
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: shouldReduceMotion || isMobile ? 0 : 0.2 }}
-              viewport={{ once: true }}
-            >
+            <m.form onSubmit={handleSubmit} className="max-w-md mx-auto">
               <Input
                 type="email"
                 name="email"
@@ -529,7 +520,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Footer */}
+        {/* ——— Footer */}
         <footer className="py-6 sm:py-8 px-6 sm:px-8 md:px-12 border-t-2 border-[#F8B24E]/20 bg-[#0F1A7D]">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <div className="text-xl sm:text-2xl font-black tracking-tighter text-[#F8B24E]">
@@ -551,7 +542,7 @@ export default function Home() {
             </div>
           </div>
         </footer>
-      </div>
+      </main>
     </LazyMotion>
   );
 }
