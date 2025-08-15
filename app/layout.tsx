@@ -1,23 +1,25 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/app/providers";
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/react";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Optimize font loading
+const inter = Inter({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  display: "swap", // Prevents FOIT
+  variable: "--font-inter",
+  preload: true,
+  fallback: ["system-ui", "arial"],
 });
 
 export const metadata: Metadata = {
-  title: "Sort",
-  description: "Sort App",
+  title: {
+    default: "Sort - NYC Storage Solutions",
+    template: "%s | Sort Storage",
+  },
+  description: "Premium storage solution for NYC apartments",
 };
 
 export default function RootLayout({
@@ -26,8 +28,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="en" className={inter.variable}>
+      <body className="font-sans antialiased">
         <Providers>{children}</Providers>
         <Toaster />
         <Analytics />

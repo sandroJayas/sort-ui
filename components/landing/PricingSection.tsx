@@ -1,10 +1,6 @@
-// components/landing/PricingSection.tsx
-"use client";
-
-import { m } from "framer-motion";
-import { useReducedMotion } from "framer-motion";
 import Image from "next/image";
-import { signIn } from "next-auth/react";
+import { PricingCTA } from "./PricingCTA";
+import { ScrollAnimator } from "./ScrollAnimator";
 
 const pricingFeatures = [
   "Unlimited boxes",
@@ -15,25 +11,19 @@ const pricingFeatures = [
   "Cancel anytime",
 ];
 
-export default function PricingSection() {
-  const shouldReduceMotion = useReducedMotion();
-
+export function PricingSection() {
   return (
     <section className="w-screen ml-[calc(-50vw+50%)] py-32 bg-white">
       <div className="px-8 md:px-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
           <div>
-            <m.h2
-              className="text-[10vw] md:text-[8vw] font-black tracking-tighter leading-[0.8] mb-8"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: shouldReduceMotion ? 0 : 0.6 }}
-            >
-              <span className="text-[#1724B6]">SIMPLE</span>
-              <br />
-              <span className="text-[#F8B24E]">PRICING</span>
-            </m.h2>
+            <ScrollAnimator>
+              <h2 className="text-[10vw] md:text-[8vw] font-black tracking-tighter leading-[0.8] mb-8">
+                <span className="text-[#1724B6]">SIMPLE</span>
+                <br />
+                <span className="text-[#F8B24E]">PRICING</span>
+              </h2>
+            </ScrollAnimator>
 
             <div className="space-y-8">
               <div className="flex items-baseline gap-2">
@@ -43,40 +33,28 @@ export default function PricingSection() {
 
               <div className="space-y-4">
                 {pricingFeatures.map((item, i) => (
-                  <m.div
-                    key={item}
-                    className="flex items-center gap-4"
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{
-                      delay: shouldReduceMotion ? 0 : i * 0.05,
-                      duration: shouldReduceMotion ? 0 : 0.3,
-                    }}
-                    viewport={{ once: true, margin: "-50px" }}
-                  >
-                    <div className="w-8 h-[3px] bg-[#F8B24E]" />
-                    <span className="text-lg font-bold text-[#1A1D23]">
-                      {item}
-                    </span>
-                  </m.div>
+                  <ScrollAnimator key={item}>
+                    <div
+                      className="flex items-center gap-4 animate-slide-in-left"
+                      style={{ animationDelay: `${i * 50}ms` }}
+                    >
+                      <div className="w-8 h-[3px] bg-[#F8B24E]" />
+                      <span className="text-lg font-bold text-[#1A1D23]">
+                        {item}
+                      </span>
+                    </div>
+                  </ScrollAnimator>
                 ))}
               </div>
 
-              <m.button
-                className="mt-12 px-12 py-4 bg-[#F8B24E] text-[#0F1A7D] font-black text-lg hover:bg-[#F5A02C] transition-all shadow-[6px_6px_0px_#1724B6] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[8px_8px_0px_#1724B6]"
-                whileHover={shouldReduceMotion ? {} : { scale: 1.05 }}
-                whileTap={shouldReduceMotion ? {} : { scale: 0.95 }}
-                onClick={() => signIn("auth0", { callbackUrl: "/storage" })}
-              >
-                START NOW
-              </m.button>
+              <PricingCTA />
             </div>
           </div>
 
           <div className="relative h-[600px] md:h-auto">
             <div className="absolute inset-0 bg-[#1724B6] z-0" />
             <Image
-              src="https://images.unsplash.com/photo-1600121848594-d8644e57abab?w=800&h=1000&fit=crop"
+              src="/images/storage-unit.webp"
               alt="Storage"
               fill
               className="object-cover mix-blend-luminosity opacity-60"

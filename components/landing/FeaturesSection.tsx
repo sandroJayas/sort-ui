@@ -1,10 +1,7 @@
-// components/landing/FeaturesSection.tsx
-"use client";
-
-import { m } from "framer-motion";
-import { useReducedMotion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+// Server Component with minimal client interaction
 import Image from "next/image";
+import { ArrowRight } from "lucide-react";
+import { ScrollAnimator } from "./ScrollAnimator";
 
 const features = [
   {
@@ -12,8 +9,7 @@ const features = [
     title: "BOXES ARRIVE",
     description:
       "Military-grade storage containers delivered to your door. We navigate your walk-up.",
-    image:
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=600&fit=crop",
+    image: "/images/boxes-arrive.webp",
     align: "left",
   },
   {
@@ -21,8 +17,7 @@ const features = [
     title: "YOU PACK",
     description:
       "That winter coat, old yearbooks, the exercise equipment. Pack it all.",
-    image:
-      "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&h=600&fit=crop",
+    image: "/images/you-pack.webp",
     align: "right",
   },
   {
@@ -30,8 +25,7 @@ const features = [
     title: "WE COLLECT",
     description:
       "Our crew handles everything. Stairs, doormen, that narrow hallway.",
-    image:
-      "https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=800&h=600&fit=crop",
+    image: "/images/we-collect.webp",
     align: "left",
   },
   {
@@ -39,94 +33,71 @@ const features = [
     title: "INSTANT ACCESS",
     description:
       "Need it back? 2-hour delivery in Manhattan. Because NYC doesn't wait.",
-    image:
-      "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&h=600&fit=crop",
+    image: "/images/instant-access.webp",
     align: "right",
   },
 ];
 
-export default function FeaturesSection() {
-  const shouldReduceMotion = useReducedMotion();
-
+export function FeaturesSection() {
   return (
     <section className="py-32 px-8 md:px-12 bg-[#0F1A7D]">
-      <m.div
-        className="mb-20"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true, margin: "-100px" }}
-      >
-        <h2 className="text-[8vw] md:text-[6vw] font-black tracking-tighter mb-4 text-white">
-          THE <span className="text-[#F8B24E]">PROCESS</span>
-        </h2>
-        <div className="w-20 h-[4px] bg-[#F8B24E]" />
-      </m.div>
+      <ScrollAnimator>
+        <div className="mb-20">
+          <h2 className="text-[8vw] md:text-[6vw] font-black tracking-tighter mb-4 text-white">
+            THE <span className="text-[#F8B24E]">PROCESS</span>
+          </h2>
+          <div className="w-20 h-[4px] bg-[#F8B24E]" />
+        </div>
+      </ScrollAnimator>
 
       <div className="space-y-32">
         {features.map((feature, index) => (
-          <m.div
-            key={feature.number}
-            className={`grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 ${
-              feature.align === "right" ? "md:ml-[20%]" : "md:mr-[20%]"
-            }`}
-            initial={{
-              opacity: 0,
-              x: shouldReduceMotion
-                ? 0
-                : feature.align === "right"
-                  ? 100
-                  : -100,
-            }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: shouldReduceMotion ? 0 : 0.8 }}
-            viewport={{ once: true, margin: "-100px" }}
-          >
+          <ScrollAnimator key={feature.number}>
             <div
-              className={`space-y-6 ${feature.align === "right" ? "md:order-2" : ""}`}
+              className={`grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 ${
+                feature.align === "right" ? "md:ml-[20%]" : "md:mr-[20%]"
+              } animate-slide-${feature.align}`}
             >
-              <div className="text-[#F8B24E] text-sm tracking-widest font-black">
-                {feature.number}
-              </div>
-              <h3 className="text-4xl md:text-5xl font-black tracking-tighter text-white">
-                {feature.title}
-              </h3>
-              <p className="text-lg font-light text-white/80 leading-relaxed">
-                {feature.description}
-              </p>
-              <m.button
-                className="group flex items-center gap-2 text-sm tracking-wider text-[#F8B24E] font-bold"
-                whileHover={shouldReduceMotion ? {} : { x: 10 }}
+              <div
+                className={`space-y-6 ${feature.align === "right" ? "md:order-2" : ""}`}
               >
-                <span>LEARN MORE</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
-              </m.button>
+                <div className="text-[#F8B24E] text-sm tracking-widest font-black">
+                  {feature.number}
+                </div>
+                <h3 className="text-4xl md:text-5xl font-black tracking-tighter text-white">
+                  {feature.title}
+                </h3>
+                <p className="text-lg font-light text-white/80 leading-relaxed">
+                  {feature.description}
+                </p>
+                <button className="group flex items-center gap-2 text-sm tracking-wider text-[#F8B24E] font-bold hover:translate-x-2 transition-transform">
+                  <span>LEARN MORE</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
+                </button>
+              </div>
+              <div
+                className={`relative h-[400px] ${feature.align === "right" ? "md:order-1" : ""}`}
+              >
+                <div
+                  className={`absolute inset-0 ${
+                    index % 2 === 0
+                      ? "bg-gradient-to-br from-[#F8B24E]/40 to-[#F5A02C]/40"
+                      : "bg-gradient-to-br from-[#1724B6]/40 to-[#2E3AC8]/40"
+                  } z-10 hover:scale-105 transition-transform duration-300`}
+                />
+                <Image
+                  src={feature.image}
+                  alt={feature.title}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 40vw"
+                  loading="lazy"
+                  quality={75}
+                />
+                <div className="absolute -bottom-4 -right-4 w-full h-full border-2 border-[#F8B24E] z-0" />
+              </div>
             </div>
-            <div
-              className={`relative h-[400px] ${
-                feature.align === "right" ? "md:order-1" : ""
-              }`}
-            >
-              <m.div
-                className={`absolute inset-0 ${
-                  index % 2 === 0
-                    ? "bg-gradient-to-br from-[#F8B24E]/40 to-[#F5A02C]/40"
-                    : "bg-gradient-to-br from-[#1724B6]/40 to-[#2E3AC8]/40"
-                } z-10`}
-                whileHover={shouldReduceMotion ? {} : { scale: 1.05 }}
-                transition={{ duration: 0.3 }}
-              />
-              <Image
-                src={feature.image}
-                alt={feature.title}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 40vw"
-                loading="lazy"
-                quality={75}
-              />
-              <div className="absolute -bottom-4 -right-4 w-full h-full border-2 border-[#F8B24E] z-0" />
-            </div>
-          </m.div>
+          </ScrollAnimator>
         ))}
       </div>
     </section>
